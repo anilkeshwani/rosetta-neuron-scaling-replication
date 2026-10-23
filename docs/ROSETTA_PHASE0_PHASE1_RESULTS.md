@@ -14,7 +14,7 @@ Status as of 2026-10-24. This replicates the Pythia-OPT curve of Dravid et al., 
 
 | Item | Value |
 |---|---|
-| Hardware | 4 local GPUs (the paper used 8× A100 80 GB per pair) |
+| Hardware | 4× RTX 3090 24 GB (PCIe, no NVLink), 2× Xeon Silver 4316, 128 GB RAM. The paper used 8× A100 80 GB per pair |
 | Software | torch 2.14.1+cu130, transformers 4.57.6 |
 | Data | Pile validation set from the authors' Google Drive folder, 214,670 docs |
 | Matching | Upstream defaults: k=1 mutual nearest neighbors, mean span pooling, full layer grid, bf16, seq length 1024, seed 42 |
@@ -54,7 +54,7 @@ The paper's per-pair counts are not printed anywhere. We decoded them from the m
 | Pythia-410M / OPT-350M | 98,304 | 3,444 | 5,418 | **0.64** | 9,470 / 34,965 / 92,476 | 12,307 / 40,171 / 100,971 | 38 min |
 | Pythia-1.4B / OPT-1.3B | 196,608 | 8,688 | 9,001 | 0.97 | 24,007 / 85,523 / 217,499 | 23,671 / 90,019 / 235,511 | 2.5 h |
 
-The 1.4B pair ran at BATCH_SIZE 4 because 8 ran out of memory on our GPUs. A rerun of the 160M pair at BATCH_SIZE 4 and 10M tokens is queued to measure that effect.
+The 1.4B pair ran at BATCH_SIZE 4 because 8 ran out of memory on a 24 GB RTX 3090. A rerun of the 160M pair at BATCH_SIZE 4 and 10M tokens is queued to measure that effect.
 
 ### Fits
 

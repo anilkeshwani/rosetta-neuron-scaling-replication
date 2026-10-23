@@ -2,7 +2,7 @@ name: phase2_opt_qwen
 description: >
   OPT-Qwen2.5 curve (Fig. 3a, 12.43 x^0.57). First gated-MLP family: the neuron is
   act(gate)*up, captured as the input to down_proj. The 30B/32B point does not fit on
-  the local GPUs (two bf16 models ~124 GB) and is marked for cloud.
+  4× RTX 3090 (two bf16 models ~124 GB > 96 GB) and is marked for cloud.
 # Token sample drawn as an 8-rank run would, as in phase 1; see scripts/build_token_cache.py
 token_cache_world_size: 8
 reference_fit: language.opt_qwen2.5

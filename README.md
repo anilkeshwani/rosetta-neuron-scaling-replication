@@ -47,6 +47,6 @@ Phase 1 reproduces the Pythia–OPT curve (published fit 2.20·x^0.68) and the r
 
 ## Things to know before running
 
-- Pairs above about 14B do not fit on the local GPUs; see [`docs/COMPUTE_NOTES.md`](docs/COMPUTE_NOTES.md).
+- Our runs use a workstation with 4× RTX 3090 (24 GB each, PCIe, no NVLink) and 128 GB RAM. Pairs above about 14B do not fit; see [`docs/COMPUTE_NOTES.md`](docs/COMPUTE_NOTES.md).
 - The upstream pipeline picks hook points by substring of the model id (`"pythia"`, `"opt"`, `"qwen"`, ...). Local checkpoint directories must keep the family name in their path. See [`docs/UPSTREAM_CODE_NOTES.md`](docs/UPSTREAM_CODE_NOTES.md).
 - Llama and Gemma repos are gated on the Hub. Accept the licenses with the account whose Hugging Face token you use before downloading.

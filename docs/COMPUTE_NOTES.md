@@ -1,5 +1,19 @@
 # Compute notes
 
+## Hardware
+
+All runs so far use one workstation:
+
+| Resource | Value |
+|---|---|
+| GPUs | 4× NVIDIA RTX 3090, 24 GB each (96 GB total), PCIe 4.0 x16, no NVLink |
+| CPU | 2× Intel Xeon Silver 4316 (40 cores, 80 threads) |
+| RAM | 128 GB (123 GiB usable) |
+| Storage | NVMe SSD |
+| Software | Ubuntu 24.04, torch 2.14.1 with CUDA 13.0 wheels, transformers 4.57.6 |
+
+For comparison, the paper used 8× A100 80 GB per model pair.
+
 ## What fits
 
 The matching step holds both models at once. bf16 weights take 2 bytes per parameter:

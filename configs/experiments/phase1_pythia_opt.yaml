@@ -14,7 +14,7 @@ defaults:
 pairs:
   - models: [EleutherAI/pythia-160m, facebook/opt-125m]
   - models: [EleutherAI/pythia-410m, facebook/opt-350m]
-  # BATCH_SIZE 8 runs out of memory in pass 1 on our GPUs. On the 160M pair (200k tokens)
+  # BATCH_SIZE 8 runs out of memory in pass 1 on a 24 GB RTX 3090. On the 160M pair (200k tokens)
   # BATCH_SIZE 4 moved the count by +9 of 2,663 (bf16 rounding per batch); see the handoff.
   - models: [EleutherAI/pythia-1.4b, facebook/opt-1.3b]
     env: {BATCH_SIZE: 4}
