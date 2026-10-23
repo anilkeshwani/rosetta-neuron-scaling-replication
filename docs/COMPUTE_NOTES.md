@@ -27,6 +27,8 @@ Back-of-envelope for 10M tokens, counting the correlation matmul (2·T·n_A·n_B
 
 Treat these as rough until the phase 1 small runs give measured times (`elapsed_s` in each `run_manifest.json`).
 
+Measured so far: Pythia-160M/OPT-125M at 200k tokens takes 28-36 s on 4 GPUs once the token cache and the per-tokenizer Pile stats exist. The first run with a new model1 tokenizer adds about 15 minutes for the two Pile stats scans (cached in `~/.cache/rosetta/`).
+
 ## Ways to cut cost without breaking the comparison
 
 - **Keep `NUM_SAMPLES` fixed within a curve.** The count of matches depends on the token budget (paper Fig. 33), so mixing budgets across sizes changes the exponent. A cheaper curve at, say, 2M tokens is fine if every point uses 2M. Check it against the 10M curve at the small sizes first.
