@@ -3,6 +3,8 @@ description: >
   OPT-Qwen2.5 curve (Fig. 3a, 12.43 x^0.57). First gated-MLP family: the neuron is
   act(gate)*up, captured as the input to down_proj. The 30B/32B point does not fit on
   the local GPUs (two bf16 models ~124 GB) and is marked for cloud.
+# Token sample drawn as an 8-rank run would, as in phase 1; see scripts/build_token_cache.py
+token_cache_world_size: 8
 reference_fit: language.opt_qwen2.5
 defaults:
   NUM_SAMPLES: 10000000
@@ -10,6 +12,7 @@ defaults:
   STOP_AFTER_ROSETTA: "true"
 pairs:
   - models: [facebook/opt-1.3b, Qwen/Qwen2.5-1.5B]
+    env: {BATCH_SIZE: 4}  # BATCH_SIZE 8 does not fit in GPU memory at this size (phase 1)
   - models: [facebook/opt-2.7b, Qwen/Qwen2.5-3B]
     env: {BATCH_SIZE: 4, B_BLOCK: 1}
   - models: [facebook/opt-6.7b, Qwen/Qwen2.5-7B]

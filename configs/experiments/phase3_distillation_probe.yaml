@@ -3,6 +3,8 @@ description: >
   Does shared lineage inflate Rosetta counts? Hold the student fixed and match it against
   (a) its teacher and (b) an unrelated model of similar size to the teacher. If distillation
   transfers neurons, (a) >> (b). Not a scaling curve; compare counts pairwise.
+# Token sample drawn as an 8-rank run would, as in phase 1; see scripts/build_token_cache.py
+token_cache_world_size: 8
 reference_fit: null
 defaults:
   NUM_SAMPLES: 10000000

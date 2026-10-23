@@ -4,6 +4,8 @@ description: >
   gated-MLP, independently trained, and have dense size ladders. Gemma 3 4B and up load
   as Gemma3ForConditionalGeneration; upstream's hook lookup (model.model.layers) needs a
   patch for those (see docs/UPSTREAM_CODE_NOTES.md).
+# Token sample drawn as an 8-rank run would, as in phase 1; see scripts/build_token_cache.py
+token_cache_world_size: 8
 reference_fit: null
 defaults:
   NUM_SAMPLES: 10000000
@@ -12,6 +14,7 @@ defaults:
 pairs:
   - models: [google/gemma-3-270m, Qwen/Qwen2.5-0.5B]
   - models: [google/gemma-3-1b-pt, Qwen/Qwen2.5-1.5B]
+    env: {BATCH_SIZE: 4}
   - models: [google/gemma-3-4b-pt, Qwen/Qwen2.5-3B]
     env: {BATCH_SIZE: 4, B_BLOCK: 1}
   - models: [google/gemma-3-12b-pt, Qwen/Qwen2.5-14B]
