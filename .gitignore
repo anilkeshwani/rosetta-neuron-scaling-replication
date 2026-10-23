@@ -15,3 +15,6 @@ outputs/*
 *.safetensors
 *.zst
 nohup.out
+
+# Driver and download logs (run logs live next to outputs)
+logs/
