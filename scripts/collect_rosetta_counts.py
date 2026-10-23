@@ -15,8 +15,6 @@ import pandas as pd
 from rosetta_repl import REPO_ROOT
 from rosetta_repl.registry import load_registry, resolve
 
-K_FILE = re.compile(r"best_buddies(?:_k(\d+))?\.json$")
-
 
 def count(path: Path) -> int:
     data = json.loads(path.read_text())
@@ -25,19 +23,31 @@ def count(path: Path) -> int:
     return len(data)
 
 
-def counts_for_run(run_dir: Path, k_default: int) -> dict[int, int]:
+def counts_for_run(run_dir: Path, k_default: int, k_sweep: set[int] = frozenset()) -> dict[int, int]:
+    # Only k_default and the manifest's K_NEIGHBORS_LIST count; other files are stale. The primary
+    # best_buddies.json wins over a sweep file for the same k.
+    wanted = {k_default} | set(k_sweep)
     anchors = sorted(run_dir.glob("**/rosetta_anchors.json"))
     if anchors:  # multi-model run; k-sweep anchors live in sibling dirs named with k<N>
         out = {}
         for p in anchors:
             m = re.search(r"k(\d+)", p.parent.name)
-            out[int(m.group(1)) if m else k_default] = count(p)
+            k = int(m.group(1)) if m else k_default
+            if k in wanted:
+                out[k] = count(p)
         return out
+    corr = run_dir / "correlations"
     out = {}
-    for p in (run_dir / "correlations").glob("best_buddies*.json"):
-        if m := K_FILE.search(p.name):
-            out[int(m.group(1)) if m.group(1) else k_default] = count(p)
+    for k in sorted(k_sweep):
+        if (p := corr / f"best_buddies_k{k}.json").exists():
+            out[k] = count(p)
+    if (corr / "best_buddies.json").exists():
+        out[k_default] = count(corr / "best_buddies.json")
     return out
+
+
+def sweep_ks(knobs: dict) -> set[int]:
+    return {int(k) for k in (knobs.get("K_NEIGHBORS_LIST") or "").split()}
 
 
 def main() -> None:
@@ -54,7 +64,7 @@ def main() -> None:
         entries = [resolve(m, registry) for m in manifest["models"]]
         x = sum(e.n_neurons for e in entries) / len(entries)
         k_default = int(manifest["knobs"].get("K_NEIGHBORS") or 1)
-        for k, n in sorted(counts_for_run(run_dir, k_default).items()):
+        for k, n in sorted(counts_for_run(run_dir, k_default, sweep_ks(manifest["knobs"])).items()):
             rows.append({
                 "run": run_dir.name,
                 "models": " | ".join(manifest["models"]),
