@@ -24,3 +24,11 @@ def test_skips_k_group_with_one_distinct_size(tmp_path, monkeypatch, capsys):
     fits = json.loads((tmp_path / "power_law_fit.json").read_text())["fits"]
     assert set(fits) == {"k1"}
     assert "skipping k=5" in capsys.readouterr().out
+
+
+def test_reference_keys_with_periods():
+    assert script.reference("language.opt_qwen2.5")["alpha"] == 0.57
+    assert script.reference("opt_qwen2.5")["alpha"] == 0.57
+    assert script.reference("pythia_opt")["alpha"] == 0.68
+    assert script.reference("vision.diffusion_openclip")["alpha"] == 0.63
+    assert script.reference(None) is None

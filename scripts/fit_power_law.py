@@ -23,7 +23,9 @@ def reference(key: str | None) -> dict | None:
     if not key:
         return None
     refs = yaml.safe_load((REPO_ROOT / "configs" / "paper_reference_fits.yaml").read_text())
-    section, name = key.split(".") if "." in key else ("language", key)
+    section, _, name = key.partition(".")
+    if not name or section not in refs:  # bare key, possibly with a period as in opt_qwen2.5
+        section, name = "language", key
     return refs[section][name]
 
 
