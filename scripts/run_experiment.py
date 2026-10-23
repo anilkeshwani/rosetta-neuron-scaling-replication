@@ -49,7 +49,11 @@ def main() -> int:
         env = {**env, **os.environ}
         env.setdefault("ROSETTA_DATA", str(REPO_ROOT / "data"))
         models = [os.path.expandvars(m.replace("$ROSETTA_DATA", env["ROSETTA_DATA"])) for m in pair["models"]]
-        if ws := exp.get("token_cache_world_size"):
+        if "TOKEN_CACHE" in pair.get("env", {}):  # reuse another experiment's cache, e.g. for diagnostics
+            env["TOKEN_CACHE"] = os.path.expandvars(env["TOKEN_CACHE"].replace("$ROSETTA_DATA", env["ROSETTA_DATA"]))
+            if not Path(env["TOKEN_CACHE"]).exists():
+                sys.exit(f"[experiment] {name}: TOKEN_CACHE does not exist: {env['TOKEN_CACHE']}")
+        elif ws := exp.get("token_cache_world_size"):
             cache = REPO_ROOT / "data" / "token_caches" / exp["name"] / f"{name}__ws{ws}__n{env['NUM_SAMPLES']}.pt"
             env["TOKEN_CACHE"] = str(cache)
             if not cache.exists() and not args.dry_run:
