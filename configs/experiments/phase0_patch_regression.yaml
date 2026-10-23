@@ -1,0 +1,12 @@
+name: phase0_patch_regression
+description: >
+  Regression check for our upstream patches: with every opt-in knob unset, the phase 0
+  smoke pair on the authors' 8-rank 200k-token sample must give exactly the pre-patch list
+  (2,663 pairs, outputs/phase0_smoke/pythia-160m__opt-125m__ws8cache).
+reference_fit: null
+defaults:
+  NUM_SAMPLES: 200000
+  STOP_AFTER_ROSETTA: "true"
+pairs:
+  - models: [EleutherAI/pythia-160m, facebook/opt-125m]
+    env: {TOKEN_CACHE: $ROSETTA_DATA/token_caches/ws8_pythia-160m__opt-125m_200k.pt}

@@ -1,0 +1,30 @@
+name: phase1_null_permutation
+description: >
+  Input-permutation null (paper App. C.3, Fig. 26: 44-88 matches on average, no trend).
+  Same pipeline and token samples as phase1_pythia_opt, but model B's pooled span rows are
+  shuffled within each batch (patches/0003), so the two models see mismatched inputs.
+  Three permutation seeds per size.
+reference_fit: null
+defaults:
+  NUM_SAMPLES: 10000000
+  K_NEIGHBORS: 1
+  STOP_AFTER_ROSETTA: "true"
+pairs:
+  - models: [EleutherAI/pythia-160m, facebook/opt-125m]
+    env: {ROSETTA_PERMUTE_B_SPANS: 1, TOKEN_CACHE: $ROSETTA_DATA/token_caches/phase1_pythia_opt/pythia-160m__opt-125m__ws8__n10000000.pt}
+    tag: perm1
+  - models: [EleutherAI/pythia-160m, facebook/opt-125m]
+    env: {ROSETTA_PERMUTE_B_SPANS: 2, TOKEN_CACHE: $ROSETTA_DATA/token_caches/phase1_pythia_opt/pythia-160m__opt-125m__ws8__n10000000.pt}
+    tag: perm2
+  - models: [EleutherAI/pythia-160m, facebook/opt-125m]
+    env: {ROSETTA_PERMUTE_B_SPANS: 3, TOKEN_CACHE: $ROSETTA_DATA/token_caches/phase1_pythia_opt/pythia-160m__opt-125m__ws8__n10000000.pt}
+    tag: perm3
+  - models: [EleutherAI/pythia-410m, facebook/opt-350m]
+    env: {ROSETTA_PERMUTE_B_SPANS: 1, TOKEN_CACHE: $ROSETTA_DATA/token_caches/phase1_pythia_opt/pythia-410m__opt-350m__ws8__n10000000.pt}
+    tag: perm1
+  - models: [EleutherAI/pythia-410m, facebook/opt-350m]
+    env: {ROSETTA_PERMUTE_B_SPANS: 2, TOKEN_CACHE: $ROSETTA_DATA/token_caches/phase1_pythia_opt/pythia-410m__opt-350m__ws8__n10000000.pt}
+    tag: perm2
+  - models: [EleutherAI/pythia-410m, facebook/opt-350m]
+    env: {ROSETTA_PERMUTE_B_SPANS: 3, TOKEN_CACHE: $ROSETTA_DATA/token_caches/phase1_pythia_opt/pythia-410m__opt-350m__ws8__n10000000.pt}
+    tag: perm3
