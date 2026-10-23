@@ -8,7 +8,7 @@ Replicate, then extend, Dravid et al. 2026, "Neuron Populations Exhibit Divergen
 
 ## State of the repo
 
-- Location: `~/projects/rosetta-neuron-scaling-replication`, local git only (no remote yet; ask the user before creating one).
+- Location: `~/projects/rosetta-neuron-scaling-replication`. Remote: https://github.com/anilkeshwani/rosetta-neuron-scaling-replication (private, created 2026-10-24 at the user's request).
 - The authors' code is the submodule `third_party/rosetta-neuron-scaling`, pinned at `15cd3c7`. Do not edit it in place; patches go in `patches/` (see `CLAUDE.md`).
 - Written but **not yet exercised against a real run**: `scripts/run_pair.sh`, `run_experiment.py`, `collect_rosetta_counts.py`, `fit_power_law.py`, `make_random_init_checkpoints.py`, `download_models.py`, `download_pile_val.sh`. Expect bugs. The smoke test exists to find them.
 - `configs/models.yaml` holds layer counts and MLP widths written from memory. `scripts/verify_model_registry.py` checks them against the Hub; fix any MISMATCH lines before trusting x values.
