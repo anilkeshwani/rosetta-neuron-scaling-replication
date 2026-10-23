@@ -13,6 +13,7 @@ single-process scan, so that parallel rank workers do not race to write them.
 """
 
 import argparse
+import json
 import os
 import sys
 from concurrent.futures import ProcessPoolExecutor
@@ -94,6 +95,9 @@ def main() -> None:
     merged = {k: torch.cat([s[k] for s in shards], dim=0) for k in shards[0]}
     args.out.parent.mkdir(parents=True, exist_ok=True)
     torch.save(merged, args.out)
+    provenance = {k: (str(v) if isinstance(v, Path) else v) for k, v in vars(args).items() if k != "jobs"}
+    provenance["n_sequences"] = int(merged["input_ids1"].shape[0])
+    args.out.with_suffix(".json").write_text(json.dumps(provenance, indent=2))
     print(f"[token-cache] wrote {args.out}: " + ", ".join(f"{k}{tuple(v.shape)}" for k, v in merged.items()))
 
 
