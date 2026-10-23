@@ -42,3 +42,30 @@ None open.
 - **Linear tickets:** cite as code plus title in quotes, e.g. "ML-1535 Plot WER vs Speaker Similarity", never the bare code.
 - **Ask before** anything outward-facing or hard to undo: creating a GitHub repo, pushing, rebooting, deleting outputs, launching cloud jobs (SkyPilot is installed, but the 30B+ pairs need explicit approval).
 - **Report faithfully:** if a number disagrees with the paper, say so with the evidence. Don't tune settings until it matches.
+
+## Status, 2026-10-23 22:30
+
+**What ran**
+- Pile val downloaded from the authors' Drive folder in 23 s (450 MB, sha256 `264c875d…fab92`, 214,670 docs, `meta.pile_set_name` present). Phase 1 models (160M through 12B/13B, 249 GB in the HF cache) and the 18 random-init checkpoints (3 seeds × 6 models) are on disk.
+- Code review by Codex (GPT-6 Astra) of our scripts found seven bugs; all are fixed and committed (forced reruns reused old caches and neighbor files, stale k-sweep files were counted, rank-deficient fits, `opt_qwen2.5` reference keys, manifest gaps).
+
+**Phase 0 (acceptance check).** Upstream's token sample depends on the GPU count (rank r draws N/world_size tokens with seed 42+r). Run natively on 4 GPUs, the smoke test gives 2,710 pairs, only 74.1% identical to the authors' 2,684. `scripts/build_token_cache.py` rebuilds the authors' 8-rank sample on CPU (verified tensor-identical to upstream's own cache at 4 ranks). With it we get **2,663 pairs (-0.8%), 95.4% identical to theirs**; shared pairs agree to 0.003 in correlation. Our runs are bit-identical on repeat. transformers 5.20.2 gives the same list as 4.57.6, so the residual 4.6% is bf16 numerics on different GPUs/kernels. Knob sensitivities (160M pair, 200k tokens): 2 GPUs +3 pairs, 1 GPU +6, BATCH_SIZE 4 +9 (94% overlap), B_BLOCK and the allocator setting none. I judged this a pass.
+
+**Phase 1 so far** (10M tokens, authors' 8-rank sample, 4 GPUs, k=1/2/5/10; paper values decoded from its Fig. 25, see `ROSETTA_PAPER_NOTES.md`):
+
+| Pair | x | ours k=1 | paper k=1 | ours k=2/5/10 | paper k=2/5/10 | wall time |
+|---|---|---|---|---|---|---|
+| Pythia-160M / OPT-125M | 36,864 | 2,608 | 2,609 | 6,995 / 24,274 / 60,577 | 6,976 / 24,304 / 60,525 | 7.8 min |
+| Pythia-410M / OPT-350M | 98,304 | **3,444** | **5,418** | 9,470 / 34,965 / 92,476 | 12,307 / 40,171 / 100,971 | 38 min |
+
+The 160M pair matches the paper almost exactly. **The 410M pair is 36% below the paper at k=1** (local slope 0.28 against 0.68). A CPU diagnosis found nothing specific to OPT-350M: hooks capture relu(fc1) on all 24 layers, there are few dead units and no empty layers. It did find that pass 2 accumulates correlations in bf16 over ~1,200 batches, which drops late increments; emulated on a layer subset this changed the mutual-NN count by ~4%. Not tuned, per the rules.
+
+**Running now (tmux)**
+- `rosetta-phase1` (`scripts/run_phase1_small_and_null.sh`, log `logs/phase1_driver_attempt2.log`): Pythia-1.4B/OPT-1.3B, started 21:49, pass 2 ~2 h. The first attempt ran out of memory in pass 1 at BATCH_SIZE 8 and hung in NCCL; it now uses BATCH_SIZE 4 (recorded in the experiment YAML). Then the 9 random-init null pairs as 4 single-GPU workers (rough guess: 10-15 h, the 1.4B nulls dominate).
+- `rosetta-followup` (`logs/followup_batchsize_check.sh`): after everything else, reruns the 160M pair at 10M tokens with BATCH_SIZE 4, into `outputs/phase1_diagnostics/`, to measure whether the halved batch biases the 1.4B count (more bf16 additions).
+
+**Next**
+1. When the driver logs `all done`: `collect_rosetta_counts.py` for both experiments, then `fit_power_law.py results/phase1_pythia_opt/rosetta_counts.csv --reference language.pythia_opt`, and commit `results/`. Compare the 1.4B count with the paper's 9,001 and with the BATCH_SIZE 4 check.
+2. Decide with the user on a diagnostic fp32-accumulator patch (`find_pairs/match_corr.py:179-182`), run on 160M and 410M only, to test whether bf16 accumulation explains the 410M gap. It would go in `patches/` and not be used for reported fits.
+3. Raise the paper's data oddities with the user (2.8B plotted at x=360,448 instead of 327,680; shared trailing digits across k at the largest sizes).
+4. 2.8B, 6.9B and 12B pairs: token caches are prebuilt under `data/token_caches/phase1_pythia_opt/`. Expect memory pressure; 6.9B and 12B use FSDP.

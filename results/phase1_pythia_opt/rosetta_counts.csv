@@ -1,0 +1,9 @@
+run,models,families,k,n_rosetta,x_mean_neurons,fraction_of_min_model,done,elapsed_s,num_samples
+pythia-160m__opt-125m,EleutherAI/pythia-160m | facebook/opt-125m,pythia-opt,1,2608,36864.0,0.07074652777777778,True,469,10000000
+pythia-160m__opt-125m,EleutherAI/pythia-160m | facebook/opt-125m,pythia-opt,2,6995,36864.0,0.1897515190972222,True,469,10000000
+pythia-160m__opt-125m,EleutherAI/pythia-160m | facebook/opt-125m,pythia-opt,5,24274,36864.0,0.6584743923611112,True,469,10000000
+pythia-160m__opt-125m,EleutherAI/pythia-160m | facebook/opt-125m,pythia-opt,10,60577,36864.0,1.6432562934027777,True,469,10000000
+pythia-410m__opt-350m,EleutherAI/pythia-410m | facebook/opt-350m,pythia-opt,1,3444,98304.0,0.0350341796875,True,2290,10000000
+pythia-410m__opt-350m,EleutherAI/pythia-410m | facebook/opt-350m,pythia-opt,2,9470,98304.0,0.09633382161458333,True,2290,10000000
+pythia-410m__opt-350m,EleutherAI/pythia-410m | facebook/opt-350m,pythia-opt,5,34965,98304.0,0.355682373046875,True,2290,10000000
+pythia-410m__opt-350m,EleutherAI/pythia-410m | facebook/opt-350m,pythia-opt,10,92476,98304.0,0.9407145182291666,True,2290,10000000
