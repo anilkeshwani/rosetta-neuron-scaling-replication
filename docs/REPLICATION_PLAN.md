@@ -6,10 +6,11 @@ Each phase has an experiment YAML in `configs/experiments/` and a short list of 
 
 `phase0_smoke.yaml`: Pythia-160M vs OPT-125M on 200k tokens.
 
-- [ ] `setup_env.sh` passes, including the CUDA check
-- [ ] The Pile validation set downloads and the sampler reads it
-- [ ] The run produces `correlations/best_buddies.json` and `collect_rosetta_counts.py` parses it
+- [x] `setup_env.sh` passes, including the CUDA check
+- [x] The Pile validation set downloads and the sampler reads it
+- [x] The run produces `correlations/best_buddies.json` and `collect_rosetta_counts.py` parses it
 - [ ] **Match the upstream example.** `third_party/rosetta-neuron-scaling/example_neurons` is the authors' own run with the same settings as our smoke test (`NUM_SAMPLES=200000`, seed 42, Pythia-160M as model 1). It found **2,684** Pythia-160M/OPT-125M pairs (`facebook_opt-125m/correlations/best_buddies.json`) and 2,672 Pythia-160M/GPT-2 pairs. Our count should be the same or very close; compare the pair lists as well as the totals
+  - Result 2026-10-23: 2,663 pairs (-0.8%), 95.4% of the authors' pairs identical, given their 8-rank token sample. Details in the handoff status note
 
 ## Phase 1: replicate Pythia–OPT and the random-init null
 
