@@ -39,7 +39,8 @@ def sh(*cmd):
         return f"unavailable: {e}"
 knobs = ["NUM_SAMPLES", "K_NEIGHBORS", "K_NEIGHBORS_LIST", "BATCH_SIZE", "B_BLOCK", "USE_FSDP",
          "DEPTH_NEIGHBORS", "SEQ_LENGTH", "DTYPE", "SPAN_POOL", "SPLIT", "DATASET", "NPROC_PER_NODE",
-         "STOP_AFTER_ROSETTA", "NCCL_P2P_DISABLE"]
+         "STOP_AFTER_ROSETTA", "NCCL_P2P_DISABLE", "TOKEN_CACHE",
+         "CUDA_VISIBLE_DEVICES", "MASTER_PORT_MATCH"]
 repo = os.environ["ROSETTA_REPO"]
 manifest = {
     "models": models,
