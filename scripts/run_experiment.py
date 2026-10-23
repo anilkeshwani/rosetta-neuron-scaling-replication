@@ -3,6 +3,11 @@
 Each pair's env is the experiment `defaults` overlaid with the pair's own `env`; values
 already set in the calling environment win, so `NUM_SAMPLES=1000000 run_experiment.py ...`
 overrides the YAML. Finished pairs (DONE marker) are skipped by run_pair.sh.
+
+If the experiment sets `token_cache_world_size: N`, each pair's token sample is built on
+CPU by scripts/build_token_cache.py as an N-rank run would draw it, and passed to the
+pipeline as TOKEN_CACHE. This makes the sample independent of the local GPU count; N=8
+matches the authors' runs.
 """
 
 import argparse
@@ -28,6 +33,7 @@ def main() -> int:
     parser.add_argument("--only", help="substring filter on run names")
     parser.add_argument("--keep-going", action="store_true", help="continue after a failed pair")
     parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument("--caches-only", action="store_true", help="build missing token caches, run nothing")
     args = parser.parse_args()
 
     exp = yaml.safe_load(args.experiment.read_text())
@@ -43,6 +49,20 @@ def main() -> int:
         env = {**env, **os.environ}
         env.setdefault("ROSETTA_DATA", str(REPO_ROOT / "data"))
         models = [os.path.expandvars(m.replace("$ROSETTA_DATA", env["ROSETTA_DATA"])) for m in pair["models"]]
+        if ws := exp.get("token_cache_world_size"):
+            cache = REPO_ROOT / "data" / "token_caches" / exp["name"] / f"{name}__ws{ws}__n{env['NUM_SAMPLES']}.pt"
+            env["TOKEN_CACHE"] = str(cache)
+            if not cache.exists() and not args.dry_run:
+                build = [sys.executable, str(REPO_ROOT / "scripts" / "build_token_cache.py"), models[0], models[1],
+                         "--world-size", str(ws), "--num-samples", env["NUM_SAMPLES"], "--out", str(cache)]
+                print(f"[experiment] building token cache: {cache}", flush=True)
+                if subprocess.run(build, env=env).returncode != 0:
+                    failures.append(name)
+                    if not args.keep_going:
+                        break
+                    continue
+        if args.caches_only:
+            continue
         cmd = ["bash", str(REPO_ROOT / "scripts" / "run_pair.sh"), *models, "--", name, exp["name"]]
         knobs = {k: env[k] for k in {**exp.get("defaults", {}), **pair.get("env", {})}}
         print(f"[experiment] {name} {knobs}", flush=True)

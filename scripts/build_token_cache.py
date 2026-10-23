@@ -21,7 +21,8 @@ from pathlib import Path
 import torch
 from transformers import AutoTokenizer
 
-UPSTREAM_LANG = Path(__file__).resolve().parents[1] / "third_party" / "rosetta-neuron-scaling" / "language"
+REPO_ROOT = Path(__file__).resolve().parents[1]
+UPSTREAM_LANG = REPO_ROOT / "third_party" / "rosetta-neuron-scaling" / "language"
 sys.path.insert(0, str(UPSTREAM_LANG))
 
 from data.pile_sampler import (  # noqa: E402
@@ -71,7 +72,7 @@ def main() -> None:
     parser.add_argument("--world-size", type=int, required=True)
     parser.add_argument("--num-samples", type=int, required=True)
     parser.add_argument("--out", type=Path, required=True)
-    parser.add_argument("--dataset", default=os.environ.get("DATASET"))
+    parser.add_argument("--dataset", default=os.environ.get("DATASET", str(REPO_ROOT / "data" / "pile")))
     parser.add_argument("--split", default="val")
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--jobs", type=int, default=8, help="ranks built in parallel CPU processes")
