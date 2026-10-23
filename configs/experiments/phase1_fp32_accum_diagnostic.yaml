@@ -1,0 +1,20 @@
+name: phase1_fp32_accum_diagnostic
+description: >
+  Diagnostic, not for fits. Reruns the two smallest Pythia-OPT pairs with the pass-2
+  correlation accumulator in fp32 (patches/0001) on the identical token samples. Tests
+  whether upstream's bf16 accumulation explains part of the Pythia-410M/OPT-350M gap to
+  the paper (3,444 vs 5,418 at k=1, while 160M matches: 2,608 vs 2,609).
+reference_fit: null
+defaults:
+  NUM_SAMPLES: 10000000
+  K_NEIGHBORS: 1
+  K_NEIGHBORS_LIST: "1 2 5 10"
+  STOP_AFTER_ROSETTA: "true"
+  ROSETTA_CORR_ACCUM_DTYPE: float32
+pairs:
+  - models: [EleutherAI/pythia-160m, facebook/opt-125m]
+    env: {TOKEN_CACHE: $ROSETTA_DATA/token_caches/phase1_pythia_opt/pythia-160m__opt-125m__ws8__n10000000.pt}
+    tag: fp32acc
+  - models: [EleutherAI/pythia-410m, facebook/opt-350m]
+    env: {TOKEN_CACHE: $ROSETTA_DATA/token_caches/phase1_pythia_opt/pythia-410m__opt-350m__ws8__n10000000.pt}
+    tag: fp32acc
