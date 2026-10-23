@@ -21,6 +21,12 @@ Upstream: [avdravid/rosetta-neuron-scaling](https://github.com/avdravid/rosetta-
 | Document-type firing (Fig. 7, 29, 30) | Partly: step 4 collects top-activating contexts | To write: map Pile `pile_set_name` to the 5 categories of Table 4 and normalize by token share |
 | JavaScript filtering (Table 1) | No code | Later; needs CodeSearchNet and LoRA continued pretraining of GPT2-1.5B |
 
+## Our patches
+
+All patches are opt-in through an environment variable; with it unset the code path is upstream's. `run_pair.sh` records the applied patches and the knobs in each manifest.
+
+- `0001-opt-in-fp32-correlation-accumulator.patch`: upstream sums the pass-2 outer products in the compute dtype (bf16), so over ~1,200 batches small late increments are rounded away. `ROSETTA_CORR_ACCUM_DTYPE=float32` keeps the inputs in bf16 but accumulates in fp32. Used to test whether bf16 accumulation explains part of the Pythia-410M/OPT-350M gap; not for reported fits.
+
 ## Pitfalls
 
 - **The token sample depends on the GPU count.** `match_pipeline.py` builds the token cache in shards: rank r draws `num_samples // world_size` tokens with seed `42 + r`, and rank 0 concatenates them. A 4-GPU run therefore sees different tokens from the authors' 8-GPU runs (at 200k tokens: 196 sequences instead of 200, and only 74% of the authors' smoke-test pairs reproduced). `scripts/build_token_cache.py` rebuilds the cache on CPU for any simulated rank count with upstream's own sampler, and experiments that set `token_cache_world_size: 8` pass it as `TOKEN_CACHE`. With a fixed cache, the GPU count still shifts the pass-1 batch partition and reduction order, which moved the smoke-test count by 3 (2 GPUs) and 6 (1 GPU) out of 2,663. Keep `NPROC_PER_NODE` fixed within a curve.

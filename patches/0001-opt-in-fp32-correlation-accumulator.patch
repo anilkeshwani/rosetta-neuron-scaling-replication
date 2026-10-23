@@ -1,0 +1,36 @@
+diff --git a/language/find_pairs/match_corr.py b/language/find_pairs/match_corr.py
+index e135d74..46301c0 100644
+--- a/language/find_pairs/match_corr.py
++++ b/language/find_pairs/match_corr.py
+@@ -2,6 +2,7 @@
+ 
+ from __future__ import annotations
+ 
++import os
+ from typing import List, Set, Tuple, Optional
+ 
+ import torch
+@@ -95,6 +96,10 @@ def compute_corr_token_level_averaged(
+ 
+     prod_concat: List[Optional[torch.Tensor]] = [None] * L1
+     sum_weights = 0.0
++    # Opt-in diagnostic: accumulate the outer products in this dtype instead of compute_dtype.
++    # Unset keeps upstream behavior (accumulate in compute_dtype, bf16 by default).
++    accum_dtype_name = os.environ.get("ROSETTA_CORR_ACCUM_DTYPE", "")
++    accum_dtype = getattr(torch, accum_dtype_name) if accum_dtype_name else compute_dtype
+ 
+     try:
+         for batch in tqdm(dataloader_full, desc=f"Corr block (K={K}, unweighted)", leave=False, disable=disable_tqdm):
+@@ -176,10 +181,10 @@ def compute_corr_token_level_averaged(
+                     continue
+                 DA = x.shape[1]
+                 if prod_concat[i] is None:
+-                    prod_concat[i] = torch.zeros((DA, total_DB), device=device, dtype=compute_dtype)
++                    prod_concat[i] = torch.zeros((DA, total_DB), device=device, dtype=accum_dtype)
+ 
+                 # Weighted outer product: sum over samples of w_s * x_s * avg_B_s
+-                prod_concat[i].addmm_(x.transpose(0, 1), weighted_avg_B)
++                prod_concat[i].addmm_(x.transpose(0, 1).to(accum_dtype), weighted_avg_B.to(accum_dtype))
+ 
+             sum_weights += float(U)
+ 
