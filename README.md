@@ -37,6 +37,10 @@ uv run python scripts/fit_power_law.py results/phase1_pythia_opt/rosetta_counts.
 | `data/`, `outputs/` | Gitignored: Pile data, random-init checkpoints, run outputs |
 | `results/` | Tracked: per-experiment `rosetta_counts.csv`, fit JSON and plots |
 
+## Results so far
+
+Phase 0 reproduces the authors' example run (95.4% of pairs identical). Of the first three Pythia-OPT sizes, 160M and 1.4B match the paper within 3.5%; 410M/350M is 36% low and under investigation. See [`docs/ROSETTA_PHASE0_PHASE1_RESULTS.md`](docs/ROSETTA_PHASE0_PHASE1_RESULTS.md).
+
 ## Plan in one paragraph
 
 Phase 1 reproduces the Pythia–OPT curve (published fit 2.20·x^0.68) and the random-init null locally. Phase 2 adds OPT–Qwen2.5 (12.43·x^0.57), which exercises the gated-MLP path. Phase 3 is the extension: Gemma 3 vs Qwen2.5 across matched sizes, Llama 3.x as sparse points, and a test of whether distilled checkpoints inflate Rosetta counts. Downstream analyses (vocabulary-space kurtosis, document-type firing, the JavaScript filtering study) follow once the matches exist. Details and open questions in [`docs/REPLICATION_PLAN.md`](docs/REPLICATION_PLAN.md).
