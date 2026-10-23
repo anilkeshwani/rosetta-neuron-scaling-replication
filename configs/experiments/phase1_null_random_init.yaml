@@ -19,5 +19,8 @@ pairs:
   - models: [$ROSETTA_DATA/random_init/pythia-410m-seed1, $ROSETTA_DATA/random_init/opt-350m-seed1]
   - models: [$ROSETTA_DATA/random_init/pythia-410m-seed2, $ROSETTA_DATA/random_init/opt-350m-seed2]
   - models: [$ROSETTA_DATA/random_init/pythia-1.4b-seed0, $ROSETTA_DATA/random_init/opt-1.3b-seed0]
+    env: {BATCH_SIZE: 4}  # as the trained 1.4B pair; BATCH_SIZE 8 does not fit in GPU memory
   - models: [$ROSETTA_DATA/random_init/pythia-1.4b-seed1, $ROSETTA_DATA/random_init/opt-1.3b-seed1]
+    env: {BATCH_SIZE: 4}  # as the trained 1.4B pair; BATCH_SIZE 8 does not fit in GPU memory
   - models: [$ROSETTA_DATA/random_init/pythia-1.4b-seed2, $ROSETTA_DATA/random_init/opt-1.3b-seed2]
+    env: {BATCH_SIZE: 4}  # as the trained 1.4B pair; BATCH_SIZE 8 does not fit in GPU memory
