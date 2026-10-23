@@ -26,6 +26,21 @@ Dravid, Bahri, Efros (UC Berkeley), Gandelsman (TTIC). [arXiv 2606.03990](https:
 
 All published fits are in `configs/paper_reference_fits.yaml`.
 
+### Pythia-OPT per-pair counts behind Fig. 3a and Fig. 25
+
+The paper prints no table of counts. These values were decoded from the vector marker positions in the arXiv figure PDFs (`topk_robustness.pdf`), calibrated against each figure's axis ticks; they land on integers to within 0.01, and an OLS fit in log-log space returns the published fits (2.20·x^0.678 at k=1). Fig. 3a's k=1 points equal Fig. 25's.
+
+| Pair | x (plotted) | k=1 | k=2 | k=5 | k=10 |
+|---|---|---|---|---|---|
+| Pythia-160M / OPT-125M | 36,864 | 2,609 | 6,976 | 24,304 | 60,525 |
+| Pythia-410M / OPT-350M | 98,304 | 5,418 | 12,307 | 40,171 | 100,971 |
+| Pythia-1.4B / OPT-1.3B | 196,608 | 9,001 | 23,671 | 90,019 | 235,511 |
+| Pythia-2.8B / OPT-2.7B | 360,448 | 13,686 | 34,686 | 120,686 | 300,686 |
+| Pythia-6.9B / OPT-6.7B | 524,288 | 16,276 | 47,276 | 180,276 | 375,276 |
+| Pythia-12B / OPT-13B | 778,240 | 20,282 | 67,282 | 250,282 | 490,282 |
+
+Oddities worth raising with the authors: (1) for the three largest pairs the k=2/5/10 counts share their last three digits with k=1, which does not look like raw counts; (2) the 2.8B point sits at x = 360,448, but both Pythia-2.8B and OPT-2.7B have 32 × 10,240 = 327,680 MLP neurons (every other x is the exact pair mean); (3) the OPT-Qwen2.5 series in Fig. 3a includes round values (24,000, 27,000, 45,000). Settings stated in the paper: ~10M Pile validation tokens per pair for all sizes, 8 A100 80 GB GPUs per pair. Seed, sequence length and batch size are not stated.
+
 ## Theory (Section 4.3, Appendix D)
 
 - **Assumptions:** features have importance w_r ∝ r^(−β) with β > 1, and there are more features than neurons, A(N) > N. Each feature gets an isolation score s_r, the signal-to-interference ratio in its most dedicated neuron.
