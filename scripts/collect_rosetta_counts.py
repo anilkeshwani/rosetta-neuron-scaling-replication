@@ -46,6 +46,11 @@ def counts_for_run(run_dir: Path, k_default: int, k_sweep: set[int] = frozenset(
     return out
 
 
+def is_superseded(run_dir: Path) -> bool:
+    # run_pair.sh moves a previous attempt aside to <run_dir>.superseded-<timestamp>
+    return ".superseded-" in run_dir.name
+
+
 def sweep_ks(knobs: dict) -> set[int]:
     return {int(k) for k in (knobs.get("K_NEIGHBORS_LIST") or "").split()}
 
@@ -60,6 +65,8 @@ def main() -> None:
     rows = []
     for manifest_path in sorted(args.experiment_dir.glob("*/run_manifest.json")):
         run_dir = manifest_path.parent
+        if is_superseded(run_dir):
+            continue
         manifest = json.loads(manifest_path.read_text())
         entries = [resolve(m, registry) for m in manifest["models"]]
         x = sum(e.n_neurons for e in entries) / len(entries)

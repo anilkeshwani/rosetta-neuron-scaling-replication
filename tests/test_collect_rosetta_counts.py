@@ -37,3 +37,8 @@ def test_anchor_dirs_filtered_by_sweep_list(tmp_path):
     _write(tmp_path / "rosetta_k2" / "rosetta_anchors.json", 4)
     _write(tmp_path / "rosetta_k10" / "rosetta_anchors.json", 5)
     assert collect.counts_for_run(tmp_path, 1, {2}) == {1: 3, 2: 4}
+
+
+def test_superseded_run_dirs_skipped(tmp_path):
+    assert collect.is_superseded(tmp_path / "pythia-160m__opt-125m.superseded-20261023T203831")
+    assert not collect.is_superseded(tmp_path / "pythia-160m__opt-125m")
