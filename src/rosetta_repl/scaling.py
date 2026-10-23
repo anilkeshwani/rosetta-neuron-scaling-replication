@@ -31,6 +31,8 @@ def fit_power_law(x, y) -> PowerLawFit:
         raise ValueError("need at least two points to fit")
     if np.any(x <= 0) or np.any(y <= 0):
         raise ValueError("power-law fit needs strictly positive x and y")
+    if len(np.unique(x)) < 2:
+        raise ValueError("need at least two distinct x values to fit")
 
     lx, ly = np.log(x), np.log(y)
     A = np.stack([np.ones_like(lx), lx], axis=1)

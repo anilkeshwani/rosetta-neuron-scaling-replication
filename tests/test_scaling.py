@@ -24,3 +24,8 @@ def test_noisy_fit_has_finite_standard_error():
 def test_rejects_nonpositive_counts():
     with pytest.raises(ValueError):
         fit_power_law([1e4, 1e5], [0, 10])
+
+
+def test_rejects_single_distinct_x():
+    with pytest.raises(ValueError, match="distinct"):
+        fit_power_law([1e5, 1e5, 1e5], [10, 12, 11])

@@ -41,7 +41,8 @@ def main() -> None:
     fig, ax = plt.subplots(figsize=(6, 4.5))
     for k, g in df.groupby("k"):
         g = g.sort_values("x_mean_neurons")
-        if len(g) < 2:
+        if g["x_mean_neurons"].nunique() < 2:
+            print(f"skipping k={k}: need at least two distinct model sizes, got {g['x_mean_neurons'].nunique()}")
             continue
         fit = fit_power_law(g["x_mean_neurons"], g["n_rosetta"])
         results["fits"][f"k{k}"] = fit.to_dict()
