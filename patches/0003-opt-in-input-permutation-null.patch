@@ -1,0 +1,33 @@
+--- a/language/find_pairs/match_corr.py
++++ b/language/find_pairs/match_corr.py
+@@ -100,6 +100,11 @@
+     # Unset keeps upstream behavior (accumulate in compute_dtype, bf16 by default).
+     accum_dtype_name = os.environ.get("ROSETTA_CORR_ACCUM_DTYPE", "")
+     accum_dtype = getattr(torch, accum_dtype_name) if accum_dtype_name else compute_dtype
++    # Opt-in input-permutation null (paper App. C.3): shuffle model B's pooled span rows within
++    # each batch so A and B see mismatched inputs. Marginals are unchanged. The seed plus the
++    # batch index fixes the permutation, so every B-block pass and every rank uses the same one.
++    permute_seed = os.environ.get("ROSETTA_PERMUTE_B_SPANS", "")
++    batch_idx = -1
+ 
+     try:
+         for batch in tqdm(dataloader_full, desc=f"Corr block (K={K}, unweighted)", leave=False, disable=disable_tqdm):
+@@ -110,6 +115,7 @@
+                 batch["aligned_len"],
+             )
+             U = len(span_b)
++            batch_idx += 1
+             if U == 0:
+                 continue
+ 
+@@ -172,6 +178,10 @@
+ 
+             del raw_x_layers, raw_avg_B_list
+ 
++            if permute_seed:
++                gen = torch.Generator().manual_seed(int(permute_seed) * 1_000_003 + batch_idx)
++                avg_B_concat = avg_B_concat[torch.randperm(U, generator=gen).to(device)]
++
+             # --- Unweighted accumulation for each A layer ---
+             weighted_avg_B = avg_B_concat  # (U, total_DB)
+ 

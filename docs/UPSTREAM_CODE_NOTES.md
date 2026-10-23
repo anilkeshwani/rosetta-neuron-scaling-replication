@@ -26,6 +26,7 @@ Upstream: [avdravid/rosetta-neuron-scaling](https://github.com/avdravid/rosetta-
 All patches are opt-in through an environment variable; with it unset the code path is upstream's. `run_pair.sh` records the applied patches and the knobs in each manifest.
 
 - `0001-opt-in-fp32-correlation-accumulator.patch`: upstream sums the pass-2 outer products in the compute dtype (bf16), so over ~1,200 batches small late increments are rounded away. `ROSETTA_CORR_ACCUM_DTYPE=float32` keeps the inputs in bf16 but accumulates in fp32. Used to test whether bf16 accumulation explains part of the Pythia-410M/OPT-350M gap; not for reported fits.
+- `0003-opt-in-input-permutation-null.patch`: the paper's input-permutation null (App. C.3) "randomly permute[s] the flattened activation positions for one model". Our streaming pipeline cannot permute across the whole dataset, so `ROSETTA_PERMUTE_B_SPANS=<seed>` permutes model B's pooled span rows within each batch (8 sequences, several thousand spans). That breaks the input alignment and keeps each neuron's marginal distribution. The permutation depends only on the seed and the batch index, so all B-block passes and ranks see the same one.
 
 ## Pitfalls
 
