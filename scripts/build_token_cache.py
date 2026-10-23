@@ -7,13 +7,15 @@ on the GPU count. The authors' example run (example_neurons/run.log) used 8 rank
 once per simulated rank and writes the merged file; pass it to run_pair.sh as TOKEN_CACHE
 and match_lm loads it instead of sampling.
 
-The per-tokenizer Pile stats file (~/.cache/rosetta/pile_val_stats_*.json) must already
-exist; any earlier run with the same model1 creates it.
+The per-tokenizer Pile stats files (~/.cache/rosetta/pile_val_stats_*.json and the
+.ge<seq_length>tok.json filtered variant) are built first if missing, with upstream's
+single-process scan, so that parallel rank workers do not race to write them.
 """
 
 import argparse
 import os
 import sys
+from concurrent.futures import ProcessPoolExecutor
 from pathlib import Path
 
 import torch
@@ -22,7 +24,11 @@ from transformers import AutoTokenizer
 UPSTREAM_LANG = Path(__file__).resolve().parents[1] / "third_party" / "rosetta-neuron-scaling" / "language"
 sys.path.insert(0, str(UPSTREAM_LANG))
 
-from data.pile_sampler import resolve_pile_stats_path  # noqa: E402
+from data.pile_sampler import (  # noqa: E402
+    _load_or_build_filtered_token_stats,
+    _load_or_build_val_stats,
+    resolve_pile_stats_path,
+)
 from find_pairs.match_cache import _split_token_budget, pretokenize_pile_two_models_bytecache_once  # noqa: E402
 
 
@@ -35,6 +41,29 @@ def load_tokenizer(name: str):
     return tok
 
 
+def build_shard(job: tuple) -> dict:
+    args, rank, stats_path = job
+    tok1, tok2 = load_tokenizer(args.model1), load_tokenizer(args.model2)
+    budget = _split_token_budget(args.num_samples, rank, args.world_size)
+    print(f"[token-cache] rank {rank}/{args.world_size}: budget={budget} seed={args.seed + rank}", flush=True)
+    return pretokenize_pile_two_models_bytecache_once(
+        tok1,
+        tok2,
+        total_token_budget=budget,
+        dataset_name=args.dataset,
+        max_tokens=args.seq_length,
+        max_bytes=args.max_bytes,
+        text_batch=args.tokenize_batch,
+        seed=args.seed + rank,
+        split=args.split,
+        pile_subsets=None,
+        stats_path=stats_path,
+        ratio_by="tokens",
+        use_padding=False,
+        allow_empty=True,
+    )
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("model1")
@@ -45,39 +74,21 @@ def main() -> None:
     parser.add_argument("--dataset", default=os.environ.get("DATASET"))
     parser.add_argument("--split", default="val")
     parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument("--jobs", type=int, default=8, help="ranks built in parallel CPU processes")
     # Defaults below are run_pipeline.sh's / match_cli's
     parser.add_argument("--seq-length", type=int, default=1024)
     parser.add_argument("--max-bytes", type=int, default=8096)
     parser.add_argument("--tokenize-batch", type=int, default=256)
     args = parser.parse_args()
 
-    tok1, tok2 = load_tokenizer(args.model1), load_tokenizer(args.model2)
+    tok1 = load_tokenizer(args.model1)
     stats_path = resolve_pile_stats_path(args.dataset, tok1)
-    if not os.path.exists(stats_path):
-        sys.exit(f"missing Pile stats {stats_path}; run any pair with model1={args.model1} first")
+    _load_or_build_val_stats(args.dataset, tok1, stats_path=stats_path)
+    _load_or_build_filtered_token_stats(args.dataset, tok1, context_length=args.seq_length, stats_path=stats_path)
 
-    shards = []
-    for rank in range(args.world_size):
-        budget = _split_token_budget(args.num_samples, rank, args.world_size)
-        print(f"[token-cache] rank {rank}/{args.world_size}: budget={budget} seed={args.seed + rank}", flush=True)
-        shard = pretokenize_pile_two_models_bytecache_once(
-            tok1,
-            tok2,
-            total_token_budget=budget,
-            dataset_name=args.dataset,
-            max_tokens=args.seq_length,
-            max_bytes=args.max_bytes,
-            text_batch=args.tokenize_batch,
-            seed=args.seed + rank,
-            split=args.split,
-            pile_subsets=None,
-            stats_path=stats_path,
-            ratio_by="tokens",
-            use_padding=False,
-            allow_empty=True,
-        )
-        if shard:
-            shards.append(shard)
+    with ProcessPoolExecutor(max_workers=min(args.jobs, args.world_size)) as pool:
+        results = list(pool.map(build_shard, [(args, rank, stats_path) for rank in range(args.world_size)]))
+    shards = [s for s in results if s]  # rank order, as upstream's rank-0 merge
 
     merged = {k: torch.cat([s[k] for s in shards], dim=0) for k in shards[0]}
     args.out.parent.mkdir(parents=True, exist_ok=True)
