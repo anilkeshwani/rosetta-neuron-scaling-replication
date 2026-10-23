@@ -22,6 +22,13 @@ OUT="$ROSETTA_OUTPUTS/$EXPERIMENT/$RUN_NAME"
 if [ -f "$OUT/DONE" ] && [ "${FORCE:-0}" != "1" ]; then
   echo "[run_pair] already done: $OUT (FORCE=1 to rerun)"; exit 0
 fi
+# Upstream reuses any token cache and neighbor files it finds in OUT, so a forced rerun or a
+# retry after a failure starts from an empty directory. The old one is kept, not deleted.
+if [ -d "$OUT" ]; then
+  old="$OUT.superseded-$(date +%Y%m%dT%H%M%S)"
+  mv "$OUT" "$old"
+  echo "[run_pair] moved previous attempt to $old"
+fi
 mkdir -p "$OUT"
 [ -s "$DATASET/val.jsonl.zst" ] || { echo "[run_pair] missing $DATASET/val.jsonl.zst; run scripts/download_pile_val.sh" >&2; exit 1; }
 
@@ -39,8 +46,9 @@ def sh(*cmd):
         return f"unavailable: {e}"
 knobs = ["NUM_SAMPLES", "K_NEIGHBORS", "K_NEIGHBORS_LIST", "BATCH_SIZE", "B_BLOCK", "USE_FSDP",
          "DEPTH_NEIGHBORS", "SEQ_LENGTH", "DTYPE", "SPAN_POOL", "SPLIT", "DATASET", "NPROC_PER_NODE",
-         "STOP_AFTER_ROSETTA", "NCCL_P2P_DISABLE", "TOKEN_CACHE",
-         "CUDA_VISIBLE_DEVICES", "MASTER_PORT_MATCH"]
+         "STOP_AFTER_ROSETTA", "NCCL_P2P_DISABLE", "TOKEN_CACHE", "CUDA_VISIBLE_DEVICES",
+         "MASTER_PORT_MATCH", "NPROC_MATCH", "REVISION1", "REVISION2", "TOKENIZER1", "TOKENIZER2",
+         "PILE_SUBSETS", "TOKENIZE_BATCH", "SAVE_NEIGHBORS_TOPK"]
 repo = os.environ["ROSETTA_REPO"]
 manifest = {
     "models": models,
@@ -51,9 +59,17 @@ manifest = {
     "repo_sha": sh("git", "-C", repo, "rev-parse", "HEAD"),
     "repo_dirty": bool(sh("git", "-C", repo, "status", "--porcelain")),
     "upstream_sha": sh("git", "-C", os.environ["UPSTREAM_DIR"], "rev-parse", "HEAD"),
-    "upstream_dirty": bool(sh("git", "-C", os.environ["UPSTREAM_DIR"], "status", "--porcelain")),
+    # Untracked files there are only __pycache__ from importing upstream modules
+    "upstream_dirty": bool(sh("git", "-C", os.environ["UPSTREAM_DIR"], "status", "--porcelain", "--untracked-files=no")),
     "gpus": sh("nvidia-smi", "--query-gpu=name,memory.total,driver_version", "--format=csv,noheader"),
 }
+if manifest["gpus"].startswith("unavailable"):  # NVML unavailable; ask torch
+    import torch
+    manifest["gpus"] = [torch.cuda.get_device_name(i) for i in range(torch.cuda.device_count())]
+cache = os.environ.get("TOKEN_CACHE")
+if cache and os.path.exists(cache.removesuffix(".pt") + ".json"):
+    manifest["token_cache_provenance"] = json.load(open(cache.removesuffix(".pt") + ".json"))
+
 with open(path, "w") as f:
     json.dump(manifest, f, indent=2)
 PY
