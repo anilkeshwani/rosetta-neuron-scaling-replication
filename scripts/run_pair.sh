@@ -37,7 +37,7 @@ source "$ROSETTA_REPO/.venv/bin/activate"
 export OUTPUT_BASE="$OUT"
 
 python - "$OUT/run_manifest.json" "${MODELS[@]}" <<'PY'
-import datetime, json, os, socket, subprocess, sys
+import datetime, glob, json, os, socket, subprocess, sys
 path, models = sys.argv[1], sys.argv[2:]
 def sh(*cmd):
     try:
@@ -48,7 +48,8 @@ knobs = ["NUM_SAMPLES", "K_NEIGHBORS", "K_NEIGHBORS_LIST", "BATCH_SIZE", "B_BLOC
          "DEPTH_NEIGHBORS", "SEQ_LENGTH", "DTYPE", "SPAN_POOL", "SPLIT", "DATASET", "NPROC_PER_NODE",
          "STOP_AFTER_ROSETTA", "NCCL_P2P_DISABLE", "TOKEN_CACHE", "CUDA_VISIBLE_DEVICES",
          "MASTER_PORT_MATCH", "NPROC_MATCH", "REVISION1", "REVISION2", "TOKENIZER1", "TOKENIZER2",
-         "PILE_SUBSETS", "TOKENIZE_BATCH", "SAVE_NEIGHBORS_TOPK"]
+         "PILE_SUBSETS", "TOKENIZE_BATCH", "SAVE_NEIGHBORS_TOPK", "ROSETTA_CORR_ACCUM_DTYPE",
+         "ROSETTA_PERMUTE_B_SPANS"]
 repo = os.environ["ROSETTA_REPO"]
 manifest = {
     "models": models,
@@ -61,6 +62,12 @@ manifest = {
     "upstream_sha": sh("git", "-C", os.environ["UPSTREAM_DIR"], "rev-parse", "HEAD"),
     # Untracked files there are only __pycache__ from importing upstream modules
     "upstream_dirty": bool(sh("git", "-C", os.environ["UPSTREAM_DIR"], "status", "--porcelain", "--untracked-files=no")),
+    # Our patches currently applied to upstream (each is opt-in; unset knobs keep upstream behavior)
+    "upstream_patches": sorted(
+        os.path.basename(p) for p in glob.glob(os.path.join(repo, "patches", "*.patch"))
+        if subprocess.run(["git", "-C", os.environ["UPSTREAM_DIR"], "apply", "--reverse", "--check", p],
+                          capture_output=True).returncode == 0
+    ),
     "gpus": sh("nvidia-smi", "--query-gpu=name,memory.total,driver_version", "--format=csv,noheader"),
 }
 if manifest["gpus"].startswith("unavailable"):  # NVML unavailable; ask torch
