@@ -37,7 +37,7 @@ source "$ROSETTA_REPO/.venv/bin/activate"
 export OUTPUT_BASE="$OUT"
 
 python - "$OUT/run_manifest.json" "${MODELS[@]}" <<'PY'
-import datetime, glob, json, os, socket, subprocess, sys
+import datetime, json, os, socket, subprocess, sys
 path, models = sys.argv[1], sys.argv[2:]
 def sh(*cmd):
     try:
@@ -62,12 +62,10 @@ manifest = {
     "upstream_sha": sh("git", "-C", os.environ["UPSTREAM_DIR"], "rev-parse", "HEAD"),
     # Untracked files there are only __pycache__ from importing upstream modules
     "upstream_dirty": bool(sh("git", "-C", os.environ["UPSTREAM_DIR"], "status", "--porcelain", "--untracked-files=no")),
-    # Our patches currently applied to upstream (each is opt-in; unset knobs keep upstream behavior)
-    "upstream_patches": sorted(
-        os.path.basename(p) for p in glob.glob(os.path.join(repo, "patches", "*.patch"))
-        if subprocess.run(["git", "-C", os.environ["UPSTREAM_DIR"], "apply", "--reverse", "--check", p],
-                          capture_output=True).returncode == 0
-    ),
+    # Is upstream exactly the pinned commit plus our patch series? (each patch is opt-in)
+    "upstream_patches": json.loads(subprocess.run(
+        [sys.executable, os.path.join(repo, "scripts", "check_upstream_patches.py")],
+        capture_output=True, text=True).stdout or "null"),
     "gpus": sh("nvidia-smi", "--query-gpu=name,memory.total,driver_version", "--format=csv,noheader"),
 }
 if manifest["gpus"].startswith("unavailable"):  # NVML unavailable; ask torch

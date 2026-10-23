@@ -10,15 +10,18 @@ command -v zstdcat >/dev/null || { echo "zstdcat not found; install the zstd pac
 
 git submodule update --init --recursive
 
+# Upstream = pinned commit + patches/*.patch in name order. Patches can touch the same file,
+# so on any mismatch reset upstream's tracked files and apply the whole series again.
 shopt -s nullglob
-for p in patches/*.patch; do
-  if git -C "$UPSTREAM_DIR" apply --reverse --check "$ROSETTA_REPO/$p" 2>/dev/null; then
-    echo "[setup] patch already applied: $p"
-  else
+if command -v uv >/dev/null && uv run python scripts/check_upstream_patches.py >/dev/null 2>&1; then
+  echo "[setup] upstream already matches the patch series"
+else
+  git -C "$UPSTREAM_DIR" checkout -- .
+  for p in patches/*.patch; do
     git -C "$UPSTREAM_DIR" apply "$ROSETTA_REPO/$p"
     echo "[setup] applied: $p"
-  fi
-done
+  done
+fi
 
 uv sync
 
