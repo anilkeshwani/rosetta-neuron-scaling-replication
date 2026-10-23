@@ -18,7 +18,7 @@ Replicate, then extend, Dravid et al. 2026, "Neuron Populations Exhibit Divergen
 
 - `bash scripts/setup_env.sh` ran clean: uv venv (Python 3.12), torch with CUDA 13.0, the submodule checked out and 7/7 unit tests passing.
 - `verify_model_registry.py`: all 36 registry entries match their Hub configs. That includes the gated Llama and Gemma repos, so the local Hugging Face token already has access.
-- After that run, `transformers` was pinned to `>=4.50,<5`. The first sync resolved to 5.x, while upstream targets the 4.x API. Run `uv sync` once to apply the pin.
+- `transformers` is pinned to `>=4.50,<5` (now 4.57.6): an unpinned sync resolved to 5.x, while upstream targets the 4.x API.
 - Not done yet: Pile download, model downloads, any pipeline run.
 
 ## Blockers
@@ -28,7 +28,7 @@ None open.
 ## Next steps, in order
 
 1. `bash scripts/download_pile_val.sh`. It uses gdown on the authors' Google Drive folder. If Drive throttles or blocks it, stop and tell the user. Do not substitute an HF mirror without `meta.pile_set_name` (see `docs/UPSTREAM_CODE_NOTES.md`).
-2. `uv sync` to apply the transformers pin, then `uv run pytest -q`.
+2. Pick up any changes since this handoff: `git log --oneline` (scaffold commit `6db655b`), `uv sync`, `uv run pytest -q`.
 3. `uv run python scripts/download_models.py --experiment configs/experiments/phase1_pythia_opt.yaml`. Also run `uv run python scripts/make_random_init_checkpoints.py EleutherAI/pythia-160m EleutherAI/pythia-410m EleutherAI/pythia-1.4b facebook/opt-125m facebook/opt-350m facebook/opt-1.3b`.
 4. Once the GPUs work: `uv run python scripts/run_experiment.py configs/experiments/phase0_smoke.yaml`. **Acceptance check:** the authors' own run with identical settings (200k tokens, seed 42) found **2,684** Pythia-160M/OPT-125M pairs; see `third_party/rosetta-neuron-scaling/example_neurons/facebook_opt-125m/correlations/best_buddies.json`. Compare the total and the pair list. A large gap means something differs (data file, transformers version, dtype) and must be explained before moving on.
 5. Phase 1 small pairs (160M, 410M, 1.4B) plus the random-init null. Record wall times; the estimates in `docs/COMPUTE_NOTES.md` are back-of-envelope. Use `tmux` for anything over an hour.
