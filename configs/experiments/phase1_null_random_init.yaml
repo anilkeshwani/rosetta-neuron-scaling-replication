@@ -6,6 +6,8 @@ description: >
   $ROSETTA_DATA/random_init/<model>-seed<k>; the directory names keep the family string
   because upstream picks hook points by substring of the model path.
 reference_fit: null
+# Token sample drawn as an 8-rank run would (the authors used 8 GPUs); see scripts/build_token_cache.py
+token_cache_world_size: 8
 defaults:
   NUM_SAMPLES: 10000000
   STOP_AFTER_ROSETTA: "true"

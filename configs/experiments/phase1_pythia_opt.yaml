@@ -4,6 +4,8 @@ description: >
   Pythia is model1 throughout, matching the paper's downstream analyses (kurtosis,
   document-type firing, JavaScript filtering), which all use Pythia neurons from these matches.
 reference_fit: language.pythia_opt
+# Token sample drawn as an 8-rank run would (the authors used 8 GPUs); see scripts/build_token_cache.py
+token_cache_world_size: 8
 defaults:
   NUM_SAMPLES: 10000000
   K_NEIGHBORS: 1
