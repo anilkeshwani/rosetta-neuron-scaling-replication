@@ -41,6 +41,36 @@ The paper prints no table of counts. These values were decoded from the vector m
 
 Oddities worth raising with the authors: (1) for the three largest pairs the k=2/5/10 counts share their last three digits with k=1, which does not look like raw counts; (2) the 2.8B point sits at x = 360,448, but both Pythia-2.8B and OPT-2.7B have 32 × 10,240 = 327,680 MLP neurons (every other x is the exact pair mean); (3) the OPT-Qwen2.5 series in Fig. 3a includes round values (24,000, 27,000, 45,000). Settings stated in the paper: ~10M Pile validation tokens per pair for all sizes, 8 A100 80 GB GPUs per pair. Seed, sequence length and batch size are not stated.
 
+### Other decoded figure data (same method)
+
+Fig. 3a, other language series (each legend fit is reproduced by OLS on its points):
+
+| Series | Pairs (implied by x) | x → count |
+|---|---|---|
+| OPT-Qwen2.5 (12.43·x^0.57) | 1.3B/1.5B, 2.7B/3B, 6.7B/7B, 13B/14B, 30B/32B | 223,744 → 14,890; 361,984 → 18,034; 580,000 → 24,000; 741,376 → 27,000; 1,572,864 → 45,000 |
+| Pythia-GPT2 (7.98·x^0.54) | 160M/small, 410M/medium, 1.4B/xl | 36,864 → 2,441; 98,304 → 4,118; 251,904 → 6,945 |
+| OPT-Pythia-GPT2, 3-model (2.43·x^0.59) | 125M/160M/small, 350M/410M/medium, 1.3B/1.4B/xl | 36,864 → 1,278; 98,304 → 1,980; 233,472 → 3,830 |
+| Pythia-OPT-Qwen2.5, 3-model (1.99·x^0.60) | 1.4B-1.5B, 2.8B-3B, 6.9B-7B, 12B-14B | 214,699 → 3,294; 372,395 → 4,383; 526,336 → 5,306; 740,011 → 7,042 |
+
+Wherever Pythia-2.8B appears, its x is computed as if it had 393,216 neurons (it has 327,680). The OPT-Qwen 6.7B/7B point sits at x = 580,000 instead of 527,360.
+
+Fig. 4 random-init null (Pythia-OPT sizes 160M to 12B, mean ± plotted error bar over 3 seeds): 21.7 ± 8.1, 28.3 ± 6.7, 25.0 ± 5.7, 21.7 ± 7.5, 33.3 ± 5.1, 27.3 ± 4.1.
+
+Fig. 26 input-permutation null (App. C.3; "we randomly permute the flattened activation positions for one model"; 3 permutations, mean ± 95% CI): 55.3 ± 21.5, 43.7 ± 19.7, 60.2 ± 30.7, 55.3 ± 28.5, 87.7 ± 31.1, 85.0 ± 25.1.
+
+Fig. 33 token-budget sweep (captioned Pythia-6.9B/OPT-6.7B): 1e3 → 19,564; 1e4 → 17,127; 1e5 → 16,111; 1e6 → 14,655; 1e7 → 13,686; 1e8 → 13,400. Jaccard with the previous budget: 0.121, 0.389, 0.522, 0.780, 0.863. The 1e7 count equals the Fig. 3a count of the 2.8B pair, not of the 6.9B pair (16,276).
+
+Fig. 6a / Fig. 28 mean excess kurtosis of cos(W_out row, W_U[v]) over the vocabulary:
+
+| Family (sizes) | Rosetta | Non-Rosetta |
+|---|---|---|
+| Pythia (160M to 12B) | 3.23, 3.50, 7.50, 10.54, 14.59, 22.00 | 2.73, 0.44, 0.76, 0.80, 0.89, 0.99 |
+| OPT (1.3B to 30B) | 7.30, 9.65, 12.70, 13.70, 19.50 | 1.60, 1.53, 1.90, 1.50, 1.25 |
+| Qwen2.5 (1.5B to 32B) | 3.90, 6.20, 7.00, 8.00, 14.05 | 1.30, 1.49, 1.82, 3.20, 1.80 |
+
+The paper does not mention Llama, Gemma or distillation; its language families are Pythia, GPT-2, OPT and Qwen2.5 base models.
+
+
 ## Theory (Section 4.3, Appendix D)
 
 - **Assumptions:** features have importance w_r ∝ r^(−β) with β > 1, and there are more features than neurons, A(N) > N. Each feature gets an isolation score s_r, the signal-to-interference ratio in its most dedicated neuron.
