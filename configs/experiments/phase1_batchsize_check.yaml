@@ -1,0 +1,17 @@
+name: phase1_batchsize_check
+description: >
+  Diagnostic, not for fits. The Pythia-1.4B/OPT-1.3B pair had to run at BATCH_SIZE 4
+  (8 does not fit in 24 GB). Rerun the 160M pair at BATCH_SIZE 4 on its identical 10M-token
+  sample to measure how much halving the batch (twice as many bf16 accumulator additions)
+  moves the count.
+reference_fit: null
+defaults:
+  NUM_SAMPLES: 10000000
+  K_NEIGHBORS: 1
+  K_NEIGHBORS_LIST: "1 2 5 10"
+  STOP_AFTER_ROSETTA: "true"
+  BATCH_SIZE: 4
+pairs:
+  - models: [EleutherAI/pythia-160m, facebook/opt-125m]
+    env: {TOKEN_CACHE: $ROSETTA_DATA/token_caches/phase1_pythia_opt/pythia-160m__opt-125m__ws8__n10000000.pt}
+    tag: bs4
