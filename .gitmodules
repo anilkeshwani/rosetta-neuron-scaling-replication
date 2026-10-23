@@ -1,0 +1,3 @@
+[submodule "third_party/rosetta-neuron-scaling"]
+	path = third_party/rosetta-neuron-scaling
+	url = https://github.com/avdravid/rosetta-neuron-scaling.git

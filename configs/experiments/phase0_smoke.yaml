@@ -1,0 +1,10 @@
+name: phase0_smoke
+description: >
+  Pipeline smoke test on the smallest Pythia-OPT pair with a small token budget.
+  Checks the environment, Pile loading, hooks and output parsing end to end. Not for fitting.
+reference_fit: null
+defaults:
+  NUM_SAMPLES: 200000
+  STOP_AFTER_ROSETTA: "true"
+pairs:
+  - models: [EleutherAI/pythia-160m, facebook/opt-125m]

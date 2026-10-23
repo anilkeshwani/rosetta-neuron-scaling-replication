@@ -1,0 +1,37 @@
+# Published power-law fits |R| = c * x^alpha, where x is the mean total MLP neuron
+# count of the matched models and |R| the number of mutual top-k (k=1 unless stated)
+# Pearson matches. Source: arXiv 2606.03990.
+#
+# Fig. 3 legends list five fits per panel. The pairing of each fit to a curve is
+# inferred from legend order; pythia_opt and diffusion_openclip are confirmed by the
+# k=1 entries of Fig. 25.
+
+language:
+  opt_qwen2.5:          {c: 12.43, alpha: 0.57, source: "Fig. 3a", confirmed: false}
+  pythia_opt:           {c: 2.20,  alpha: 0.68, source: "Fig. 3a, Fig. 25", confirmed: true}
+  pythia_gpt2:          {c: 7.98,  alpha: 0.54, source: "Fig. 3a", confirmed: false}
+  opt_pythia_gpt2:      {c: 2.43,  alpha: 0.59, source: "Fig. 3a (3-model intersection)", confirmed: false}
+  pythia_opt_qwen2.5:   {c: 1.99,  alpha: 0.60, source: "Fig. 3a (3-model intersection)", confirmed: false}
+
+language_topk_sweep:   # Fig. 25, Pythia-OPT
+  pythia_opt_k1:  {c: 2.20,  alpha: 0.68}
+  pythia_opt_k2:  {c: 2.51,  alpha: 0.75}
+  pythia_opt_k5:  {c: 6.09,  alpha: 0.78}
+  pythia_opt_k10: {c: 35.39, alpha: 0.71}
+
+vision:
+  diffusion_dinov2:                {c: 5.25, alpha: 0.55, source: "Fig. 3b", confirmed: false}
+  diffusion_pixio:                 {c: 8.16, alpha: 0.49, source: "Fig. 3b", confirmed: false}
+  diffusion_openclip:              {c: 1.13, alpha: 0.63, source: "Fig. 3b, Fig. 25", confirmed: true}
+  pixio_diffusion_openclip:        {c: 0.23, alpha: 0.69, source: "Fig. 3b", confirmed: false}
+  dinov2_pixio_diffusion_openclip: {c: 0.17, alpha: 0.68, source: "Fig. 3b", confirmed: false}
+
+vision_topk_sweep:     # Fig. 25, Diffusion-OpenCLIP
+  diffusion_openclip_k1:  {c: 1.13,  alpha: 0.63}
+  diffusion_openclip_k2:  {c: 3.81,  alpha: 0.61}
+  diffusion_openclip_k5:  {c: 9.91,  alpha: 0.64}
+  diffusion_openclip_k10: {c: 60.21, alpha: 0.56}
+
+nulls:
+  random_init: "Fig. 4: 0-40 matches across sizes, no trend (3 seeds)"
+  input_permutation: "Fig. 26: roughly 20-100 matches, no trend (3 permutations)"

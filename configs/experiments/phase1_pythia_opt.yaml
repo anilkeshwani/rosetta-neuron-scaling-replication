@@ -1,0 +1,21 @@
+name: phase1_pythia_opt
+description: >
+  Replicate the Pythia-OPT Rosetta Neuron scaling curve (Fig. 3a; Fig. 25 for the k sweep).
+  Pythia is model1 throughout, matching the paper's downstream analyses (kurtosis,
+  document-type firing, JavaScript filtering), which all use Pythia neurons from these matches.
+reference_fit: language.pythia_opt
+defaults:
+  NUM_SAMPLES: 10000000
+  K_NEIGHBORS: 1
+  K_NEIGHBORS_LIST: "1 2 5 10"
+  STOP_AFTER_ROSETTA: "true"
+pairs:
+  - models: [EleutherAI/pythia-160m, facebook/opt-125m]
+  - models: [EleutherAI/pythia-410m, facebook/opt-350m]
+  - models: [EleutherAI/pythia-1.4b, facebook/opt-1.3b]
+  - models: [EleutherAI/pythia-2.8b, facebook/opt-2.7b]
+    env: {BATCH_SIZE: 4, B_BLOCK: 1}
+  - models: [EleutherAI/pythia-6.9b, facebook/opt-6.7b]
+    env: {USE_FSDP: "true", BATCH_SIZE: 2, B_BLOCK: 1}
+  - models: [EleutherAI/pythia-12b, facebook/opt-13b]
+    env: {USE_FSDP: "true", BATCH_SIZE: 1, B_BLOCK: 1}

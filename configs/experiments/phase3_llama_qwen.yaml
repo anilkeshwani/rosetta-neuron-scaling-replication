@@ -1,0 +1,16 @@
+name: phase3_llama_qwen
+description: >
+  Extension: Llama 3.x (base) vs Qwen2.5 (base). Sparse ladder (1B, 3B, 8B; 70B needs cloud).
+  Llama-3.2-1B/3B are pruned and distilled from Llama-3.1-8B, so read this curve together
+  with phase3_distillation_probe.
+reference_fit: null
+defaults:
+  NUM_SAMPLES: 10000000
+  K_NEIGHBORS_LIST: "1 2 5 10"
+  STOP_AFTER_ROSETTA: "true"
+pairs:
+  - models: [meta-llama/Llama-3.2-1B, Qwen/Qwen2.5-1.5B]
+  - models: [meta-llama/Llama-3.2-3B, Qwen/Qwen2.5-3B]
+    env: {BATCH_SIZE: 4, B_BLOCK: 1}
+  - models: [meta-llama/Llama-3.1-8B, Qwen/Qwen2.5-7B]
+    env: {USE_FSDP: "true", BATCH_SIZE: 2, B_BLOCK: 1}

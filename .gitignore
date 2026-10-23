@@ -1,0 +1,17 @@
+# Environment
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+
+# Large artifacts
+data/*
+!data/.gitkeep
+outputs/*
+!outputs/.gitkeep
+# Summaries we do want tracked live under results/
+*.pt
+*.safetensors
+*.zst
+nohup.out

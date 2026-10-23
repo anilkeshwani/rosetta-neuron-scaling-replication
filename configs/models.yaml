@@ -1,0 +1,82 @@
+# Model registry. One entry per checkpoint we may match.
+#
+# n_layers and d_mlp are checked against each model's Hub config by
+# scripts/verify_model_registry.py; n_neurons is derived (n_layers * d_mlp), never stored.
+#
+# mlp_type:
+#   gelu   - phi(W_in h), neuron = post-GELU coordinate (Pythia, GPT-2)
+#   relu   - post-ReLU coordinate (OPT)
+#   gated  - act(gate) * up, the input to down_proj (Qwen2.5, Llama, Gemma)
+#
+# distilled_from: null if pretrained from scratch, else a short note on the teacher.
+# Distilled checkpoints are not independent of their teacher, which matters for any
+# within-family comparison (see docs/REPLICATION_PLAN.md, Phase 3).
+#
+# gated_repo: true if the Hub repo requires accepting a license before download.
+
+families:
+  pythia:
+    note: GPT-NeoX, all sizes trained on the Pile in the same order (deterministic data loader).
+  opt:
+    note: Meta OPT; trained on a mixture incl. a Pile subset.
+  gpt2:
+    note: OpenAI GPT-2, WebText.
+  qwen2.5:
+    note: Base (non-Instruct) Qwen2.5.
+  gemma3:
+    note: Base "-pt" checkpoints. 4B and up are multimodal (Gemma3ForConditionalGeneration); we use the text decoder.
+  gemma2:
+    note: Base checkpoints.
+  llama3:
+    note: Base (non-Instruct) Llama 3.1 / 3.2.
+
+models:
+  # Pythia
+  - {id: EleutherAI/pythia-160m, family: pythia, params_b: 0.16, n_layers: 12, d_mlp: 3072,  mlp_type: gelu, distilled_from: null, gated_repo: false}
+  - {id: EleutherAI/pythia-410m, family: pythia, params_b: 0.41, n_layers: 24, d_mlp: 4096,  mlp_type: gelu, distilled_from: null, gated_repo: false}
+  - {id: EleutherAI/pythia-1b,   family: pythia, params_b: 1.0,  n_layers: 16, d_mlp: 8192,  mlp_type: gelu, distilled_from: null, gated_repo: false}
+  - {id: EleutherAI/pythia-1.4b, family: pythia, params_b: 1.4,  n_layers: 24, d_mlp: 8192,  mlp_type: gelu, distilled_from: null, gated_repo: false}
+  - {id: EleutherAI/pythia-2.8b, family: pythia, params_b: 2.8,  n_layers: 32, d_mlp: 10240, mlp_type: gelu, distilled_from: null, gated_repo: false}
+  - {id: EleutherAI/pythia-6.9b, family: pythia, params_b: 6.9,  n_layers: 32, d_mlp: 16384, mlp_type: gelu, distilled_from: null, gated_repo: false}
+  - {id: EleutherAI/pythia-12b,  family: pythia, params_b: 12.0, n_layers: 36, d_mlp: 20480, mlp_type: gelu, distilled_from: null, gated_repo: false}
+
+  # OPT
+  - {id: facebook/opt-125m, family: opt, params_b: 0.125, n_layers: 12, d_mlp: 3072,  mlp_type: relu, distilled_from: null, gated_repo: false}
+  - {id: facebook/opt-350m, family: opt, params_b: 0.35,  n_layers: 24, d_mlp: 4096,  mlp_type: relu, distilled_from: null, gated_repo: false}
+  - {id: facebook/opt-1.3b, family: opt, params_b: 1.3,   n_layers: 24, d_mlp: 8192,  mlp_type: relu, distilled_from: null, gated_repo: false}
+  - {id: facebook/opt-2.7b, family: opt, params_b: 2.7,   n_layers: 32, d_mlp: 10240, mlp_type: relu, distilled_from: null, gated_repo: false}
+  - {id: facebook/opt-6.7b, family: opt, params_b: 6.7,   n_layers: 32, d_mlp: 16384, mlp_type: relu, distilled_from: null, gated_repo: false}
+  - {id: facebook/opt-13b,  family: opt, params_b: 13.0,  n_layers: 40, d_mlp: 20480, mlp_type: relu, distilled_from: null, gated_repo: false}
+  - {id: facebook/opt-30b,  family: opt, params_b: 30.0,  n_layers: 48, d_mlp: 28672, mlp_type: relu, distilled_from: null, gated_repo: false}
+
+  # GPT-2
+  - {id: openai-community/gpt2,        family: gpt2, params_b: 0.124, n_layers: 12, d_mlp: 3072, mlp_type: gelu, distilled_from: null, gated_repo: false}
+  - {id: openai-community/gpt2-medium, family: gpt2, params_b: 0.355, n_layers: 24, d_mlp: 4096, mlp_type: gelu, distilled_from: null, gated_repo: false}
+  - {id: openai-community/gpt2-large,  family: gpt2, params_b: 0.774, n_layers: 36, d_mlp: 5120, mlp_type: gelu, distilled_from: null, gated_repo: false}
+  - {id: openai-community/gpt2-xl,     family: gpt2, params_b: 1.5,   n_layers: 48, d_mlp: 6400, mlp_type: gelu, distilled_from: null, gated_repo: false}
+
+  # Qwen2.5 (base)
+  - {id: Qwen/Qwen2.5-0.5B, family: qwen2.5, params_b: 0.5,  n_layers: 24, d_mlp: 4864,  mlp_type: gated, distilled_from: null, gated_repo: false}
+  - {id: Qwen/Qwen2.5-1.5B, family: qwen2.5, params_b: 1.5,  n_layers: 28, d_mlp: 8960,  mlp_type: gated, distilled_from: null, gated_repo: false}
+  - {id: Qwen/Qwen2.5-3B,   family: qwen2.5, params_b: 3.0,  n_layers: 36, d_mlp: 11008, mlp_type: gated, distilled_from: null, gated_repo: false}
+  - {id: Qwen/Qwen2.5-7B,   family: qwen2.5, params_b: 7.0,  n_layers: 28, d_mlp: 18944, mlp_type: gated, distilled_from: null, gated_repo: false}
+  - {id: Qwen/Qwen2.5-14B,  family: qwen2.5, params_b: 14.0, n_layers: 48, d_mlp: 13824, mlp_type: gated, distilled_from: null, gated_repo: false}
+  - {id: Qwen/Qwen2.5-32B,  family: qwen2.5, params_b: 32.0, n_layers: 64, d_mlp: 27648, mlp_type: gated, distilled_from: null, gated_repo: false}
+
+  # Gemma 3 (base). The Gemma 3 report states all sizes were trained with distillation.
+  - {id: google/gemma-3-270m, family: gemma3, params_b: 0.27, n_layers: 18, d_mlp: 2048,  mlp_type: gated, distilled_from: "Gemma 3 teacher (logit distillation)", gated_repo: true}
+  - {id: google/gemma-3-1b-pt, family: gemma3, params_b: 1.0, n_layers: 26, d_mlp: 6912,  mlp_type: gated, distilled_from: "Gemma 3 teacher (logit distillation)", gated_repo: true}
+  - {id: google/gemma-3-4b-pt, family: gemma3, params_b: 4.0, n_layers: 34, d_mlp: 10240, mlp_type: gated, distilled_from: "Gemma 3 teacher (logit distillation)", gated_repo: true}
+  - {id: google/gemma-3-12b-pt, family: gemma3, params_b: 12.0, n_layers: 48, d_mlp: 15360, mlp_type: gated, distilled_from: "Gemma 3 teacher (logit distillation)", gated_repo: true}
+  - {id: google/gemma-3-27b-pt, family: gemma3, params_b: 27.0, n_layers: 62, d_mlp: 21504, mlp_type: gated, distilled_from: "Gemma 3 teacher (logit distillation)", gated_repo: true}
+
+  # Gemma 2 (base). 2B and 9B distilled; 27B trained from scratch. Useful for the distillation probe.
+  - {id: google/gemma-2-2b,  family: gemma2, params_b: 2.6,  n_layers: 26, d_mlp: 9216,  mlp_type: gated, distilled_from: "larger Gemma 2 teacher", gated_repo: true}
+  - {id: google/gemma-2-9b,  family: gemma2, params_b: 9.0,  n_layers: 42, d_mlp: 14336, mlp_type: gated, distilled_from: "larger Gemma 2 teacher", gated_repo: true}
+  - {id: google/gemma-2-27b, family: gemma2, params_b: 27.0, n_layers: 46, d_mlp: 36864, mlp_type: gated, distilled_from: null, gated_repo: true}
+
+  # Llama 3.x (base). 3.2 1B/3B were pruned from 3.1-8B and distilled from 3.1-8B/70B logits.
+  - {id: meta-llama/Llama-3.2-1B, family: llama3, params_b: 1.2,  n_layers: 16, d_mlp: 8192,  mlp_type: gated, distilled_from: "pruned from Llama-3.1-8B; logits from 8B/70B", gated_repo: true}
+  - {id: meta-llama/Llama-3.2-3B, family: llama3, params_b: 3.2,  n_layers: 28, d_mlp: 8192,  mlp_type: gated, distilled_from: "pruned from Llama-3.1-8B; logits from 8B/70B", gated_repo: true}
+  - {id: meta-llama/Llama-3.1-8B, family: llama3, params_b: 8.0,  n_layers: 32, d_mlp: 14336, mlp_type: gated, distilled_from: null, gated_repo: true}
+  - {id: meta-llama/Llama-3.1-70B, family: llama3, params_b: 70.6, n_layers: 80, d_mlp: 28672, mlp_type: gated, distilled_from: null, gated_repo: true}

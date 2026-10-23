@@ -1,0 +1,39 @@
+[project]
+name = "rosetta-repl"
+version = "0.1.0"
+description = "Replication and extension of 'Neuron Populations Exhibit Divergent Selectivity with Scale' (arXiv 2606.03990)"
+readme = "README.md"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "torch>=2.5",
+    # >=4.50 for Gemma 3; <5 because upstream was written against the 4.x API
+    "transformers>=4.50,<5",
+    "accelerate>=1.0",
+    "datasets>=2.14",
+    "sentencepiece>=0.1.99",
+    "protobuf>=4.25",
+    "huggingface-hub>=0.26",
+    "numpy>=1.26",
+    "pandas>=2.2",
+    "matplotlib>=3.8",
+    "einops>=0.7",
+    "tqdm>=4.65",
+    "pyyaml>=6.0",
+    "gdown>=5.2",
+]
+
+[dependency-groups]
+dev = ["pytest>=8", "ruff>=0.6"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/rosetta_repl"]
+
+[tool.ruff]
+line-length = 110
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

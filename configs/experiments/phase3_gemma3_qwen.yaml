@@ -1,0 +1,20 @@
+name: phase3_gemma3_qwen
+description: >
+  Extension: Gemma 3 (base) vs Qwen2.5 (base) at five matched sizes. Both families are
+  gated-MLP, independently trained, and have dense size ladders. Gemma 3 4B and up load
+  as Gemma3ForConditionalGeneration; upstream's hook lookup (model.model.layers) needs a
+  patch for those (see docs/UPSTREAM_CODE_NOTES.md).
+reference_fit: null
+defaults:
+  NUM_SAMPLES: 10000000
+  K_NEIGHBORS_LIST: "1 2 5 10"
+  STOP_AFTER_ROSETTA: "true"
+pairs:
+  - models: [google/gemma-3-270m, Qwen/Qwen2.5-0.5B]
+  - models: [google/gemma-3-1b-pt, Qwen/Qwen2.5-1.5B]
+  - models: [google/gemma-3-4b-pt, Qwen/Qwen2.5-3B]
+    env: {BATCH_SIZE: 4, B_BLOCK: 1}
+  - models: [google/gemma-3-12b-pt, Qwen/Qwen2.5-14B]
+    env: {USE_FSDP: "true", BATCH_SIZE: 1, B_BLOCK: 1}
+  - models: [google/gemma-3-27b-pt, Qwen/Qwen2.5-32B]
+    requires: cloud
