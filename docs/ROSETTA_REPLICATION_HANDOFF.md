@@ -8,7 +8,7 @@ Replicate, then extend, Dravid et al. 2026, "Neuron Populations Exhibit Divergen
 
 ## State of the repo
 
-- Location: `~/projects/rosetta-neuron-scaling-replication`. Remote: https://github.com/anilkeshwani/rosetta-neuron-scaling-replication (private, created 2026-10-24 at the user's request).
+- Location: `~/projects/rosetta-neuron-scaling-replication`. Remote: https://github.com/anilkeshwani/rosetta-neuron-scaling-replication (public, created 2026-10-24 at the user's request; history rewritten once that day to drop a work email, see `docs/GIT_HISTORY_REWRITE_SHA_MAP.md`).
 - The authors' code is the submodule `third_party/rosetta-neuron-scaling`, pinned at `15cd3c7`. Do not edit it in place; patches go in `patches/` (see `CLAUDE.md`).
 - Written but **not yet exercised against a real run**: `scripts/run_pair.sh`, `run_experiment.py`, `collect_rosetta_counts.py`, `fit_power_law.py`, `make_random_init_checkpoints.py`, `download_models.py`, `download_pile_val.sh`. Expect bugs. The smoke test exists to find them.
 - `configs/models.yaml` holds layer counts and MLP widths written from memory. `scripts/verify_model_registry.py` checks them against the Hub; fix any MISMATCH lines before trusting x values.
@@ -28,7 +28,7 @@ None open.
 ## Next steps, in order
 
 1. `bash scripts/download_pile_val.sh`. It uses gdown on the authors' Google Drive folder. If Drive throttles or blocks it, stop and tell the user. Do not substitute an HF mirror without `meta.pile_set_name` (see `docs/UPSTREAM_CODE_NOTES.md`).
-2. Pick up any changes since this handoff: `git log --oneline` (scaffold commit `6db655b`), `uv sync`, `uv run pytest -q`.
+2. Pick up any changes since this handoff: `git log --oneline` (scaffold commit `2dec7e1`), `uv sync`, `uv run pytest -q`.
 3. `uv run python scripts/download_models.py --experiment configs/experiments/phase1_pythia_opt.yaml`. Also run `uv run python scripts/make_random_init_checkpoints.py EleutherAI/pythia-160m EleutherAI/pythia-410m EleutherAI/pythia-1.4b facebook/opt-125m facebook/opt-350m facebook/opt-1.3b`.
 4. Once the GPUs work: `uv run python scripts/run_experiment.py configs/experiments/phase0_smoke.yaml`. **Acceptance check:** the authors' own run with identical settings (200k tokens, seed 42) found **2,684** Pythia-160M/OPT-125M pairs; see `third_party/rosetta-neuron-scaling/example_neurons/facebook_opt-125m/correlations/best_buddies.json`. Compare the total and the pair list. A large gap means something differs (data file, transformers version, dtype) and must be explained before moving on.
 5. Phase 1 small pairs (160M, 410M, 1.4B) plus the random-init null. Record wall times; the estimates in `docs/COMPUTE_NOTES.md` are back-of-envelope. Use `tmux` for anything over an hour.
