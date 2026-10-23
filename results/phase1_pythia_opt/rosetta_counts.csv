@@ -1,4 +1,8 @@
 run,models,families,k,n_rosetta,x_mean_neurons,fraction_of_min_model,done,elapsed_s,num_samples
+pythia-1.4b__opt-1.3b,EleutherAI/pythia-1.4b | facebook/opt-1.3b,pythia-opt,1,8688,196608.0,0.044189453125,True,9034,10000000
+pythia-1.4b__opt-1.3b,EleutherAI/pythia-1.4b | facebook/opt-1.3b,pythia-opt,2,24007,196608.0,0.12210591634114583,True,9034,10000000
+pythia-1.4b__opt-1.3b,EleutherAI/pythia-1.4b | facebook/opt-1.3b,pythia-opt,5,85523,196608.0,0.4349924723307292,True,9034,10000000
+pythia-1.4b__opt-1.3b,EleutherAI/pythia-1.4b | facebook/opt-1.3b,pythia-opt,10,217499,196608.0,1.1062571207682292,True,9034,10000000
 pythia-160m__opt-125m,EleutherAI/pythia-160m | facebook/opt-125m,pythia-opt,1,2608,36864.0,0.07074652777777778,True,469,10000000
 pythia-160m__opt-125m,EleutherAI/pythia-160m | facebook/opt-125m,pythia-opt,2,6995,36864.0,0.1897515190972222,True,469,10000000
 pythia-160m__opt-125m,EleutherAI/pythia-160m | facebook/opt-125m,pythia-opt,5,24274,36864.0,0.6584743923611112,True,469,10000000

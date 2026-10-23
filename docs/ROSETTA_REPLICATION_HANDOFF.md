@@ -57,15 +57,18 @@ None open.
 |---|---|---|---|---|---|---|
 | Pythia-160M / OPT-125M | 36,864 | 2,608 | 2,609 | 6,995 / 24,274 / 60,577 | 6,976 / 24,304 / 60,525 | 7.8 min |
 | Pythia-410M / OPT-350M | 98,304 | **3,444** | **5,418** | 9,470 / 34,965 / 92,476 | 12,307 / 40,171 / 100,971 | 38 min |
+| Pythia-1.4B / OPT-1.3B | 196,608 | 8,688 | 9,001 | 24,007 / 85,523 / 217,499 | 23,671 / 90,019 / 235,511 | 2.5 h (BATCH_SIZE 4) |
+
+**Update 00:20:** the 1.4B pair finished 3.5% below the paper. The three-point k=1 fit is 1.64·x^0.69 (paper 2.20·x^0.68), but R² is only 0.85 because of the low 410M point, so the pass criterion (R² ≥ 0.98) is not met. Slope from 160M to 1.4B, skipping 410M: 0.72 ours, 0.74 paper. Fit in `results/phase1_pythia_opt/power_law_fit.{json,png}`. The null pairs started at 00:20.
 
 The 160M pair matches the paper almost exactly. **The 410M pair is 36% below the paper at k=1** (local slope 0.28 against 0.68). A CPU diagnosis found nothing specific to OPT-350M: hooks capture relu(fc1) on all 24 layers, there are few dead units and no empty layers. It did find that pass 2 accumulates correlations in bf16 over ~1,200 batches, which drops late increments; emulated on a layer subset this changed the mutual-NN count by ~4%. Not tuned, per the rules.
 
 **Running now (tmux)**
-- `rosetta-phase1` (`scripts/run_phase1_small_and_null.sh`, log `logs/phase1_driver_attempt2.log`): Pythia-1.4B/OPT-1.3B, started 21:49, pass 2 ~2 h. The first attempt ran out of memory in pass 1 at BATCH_SIZE 8 and hung in NCCL; it now uses BATCH_SIZE 4 (recorded in the experiment YAML). Then the 9 random-init null pairs as 4 single-GPU workers (rough guess: 10-15 h, the 1.4B nulls dominate).
+- `rosetta-phase1` (`scripts/run_phase1_small_and_null.sh`, log `logs/phase1_driver_attempt2.log`): Pythia-1.4B/OPT-1.3B finished (see update above). The first attempt ran out of memory in pass 1 at BATCH_SIZE 8 and hung in NCCL; it now uses BATCH_SIZE 4 (recorded in the experiment YAML). Then the 9 random-init null pairs as 4 single-GPU workers (rough guess: 10-15 h, the 1.4B nulls dominate).
 - `rosetta-followup` (`logs/followup_batchsize_check.sh`): after everything else, reruns the 160M pair at 10M tokens with BATCH_SIZE 4, into `outputs/phase1_diagnostics/`, to measure whether the halved batch biases the 1.4B count (more bf16 additions).
 
 **Next**
-1. When the driver logs `all done`: `collect_rosetta_counts.py` for both experiments, then `fit_power_law.py results/phase1_pythia_opt/rosetta_counts.csv --reference language.pythia_opt`, and commit `results/`. Compare the 1.4B count with the paper's 9,001 and with the BATCH_SIZE 4 check.
+1. When the driver logs `all done`: `collect_rosetta_counts.py outputs/phase1_null_random_init` and commit. Check the BATCH_SIZE 4 rerun of the 160M pair against 2,608 to see whether the 1.4B count needs a correction note.
 2. Decide with the user on a diagnostic fp32-accumulator patch (`find_pairs/match_corr.py:179-182`), run on 160M and 410M only, to test whether bf16 accumulation explains the 410M gap. It would go in `patches/` and not be used for reported fits.
 3. Raise the paper's data oddities with the user (2.8B plotted at x=360,448 instead of 327,680; shared trailing digits across k at the largest sizes).
 4. 2.8B, 6.9B and 12B pairs: token caches are prebuilt under `data/token_caches/phase1_pythia_opt/`. Expect memory pressure; 6.9B and 12B use FSDP.
