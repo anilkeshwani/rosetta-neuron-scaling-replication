@@ -19,6 +19,8 @@ export NPROC_PER_NODE="${NPROC_PER_NODE:-4}"
 case ":$PATH:" in *":$HOME/.local/bin:"*) ;; *) export PATH="$HOME/.local/bin:$PATH" ;; esac
 
 export TOKENIZERS_PARALLELISM=false
+# Less fragmentation on the local GPUs; no effect on results (checked on the phase 0 pair)
+export PYTORCH_CUDA_ALLOC_CONF="${PYTORCH_CUDA_ALLOC_CONF:-expandable_segments:True}"
 
 # If NCCL hangs at init or during all-reduce, uncomment:
 # export NCCL_P2P_DISABLE=1
