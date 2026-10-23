@@ -1,0 +1,28 @@
+name: phase1_token_budget
+description: >
+  Token-budget check (paper Fig. 33 runs this at 6.9B only): how much does the Rosetta count
+  move between 1M, 3M and 10M tokens? The 10M points are the phase1_pythia_opt runs.
+  Tells us whether a cheaper budget is usable for the large pairs, and whether the 410M
+  shortfall depends on the budget.
+reference_fit: null
+token_cache_world_size: 8
+defaults:
+  K_NEIGHBORS: 1
+  K_NEIGHBORS_LIST: "1 2 5 10"
+  STOP_AFTER_ROSETTA: "true"
+pairs:
+  - models: [EleutherAI/pythia-160m, facebook/opt-125m]
+    env: {NUM_SAMPLES: 1000000}
+    tag: n1M
+  - models: [EleutherAI/pythia-160m, facebook/opt-125m]
+    env: {NUM_SAMPLES: 3000000}
+    tag: n3M
+  - models: [EleutherAI/pythia-410m, facebook/opt-350m]
+    env: {NUM_SAMPLES: 1000000}
+    tag: n1M
+  - models: [EleutherAI/pythia-410m, facebook/opt-350m]
+    env: {NUM_SAMPLES: 3000000}
+    tag: n3M
+  - models: [EleutherAI/pythia-410m, facebook/opt-350m]
+    env: {NUM_SAMPLES: 30000000}
+    tag: n30M
