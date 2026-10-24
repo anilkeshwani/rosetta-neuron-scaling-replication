@@ -7,7 +7,8 @@
 # with # are skipped, and a line "STOP" ends the runner. Finished lines are appended to
 # QUEUE_FILE.done with their exit code, so the queue can be edited (reordered, extended) while
 # the runner works. If WAIT_FILE and WAIT_PATTERN are given, start only once the pattern
-# appears in that file (e.g. after another schedule finishes with the GPUs).
+# appears in that file (e.g. after another schedule finishes with the GPUs). While the file
+# QUEUE_FILE.pause exists, no new item starts (scripts/gpu_pause.sh frees the GPUs).
 set -uo pipefail
 cd "$(dirname -- "${BASH_SOURCE[0]}")/.."
 source scripts/env.sh
@@ -18,6 +19,7 @@ if [ "$#" -ge 3 ]; then
 fi
 echo "[queue] start $(date -Is)"
 while true; do
+  if [ -e "$QUEUE.pause" ]; then sleep 60; continue; fi
   line=$(grep -v -e '^\s*#' -e '^\s*$' "$QUEUE" | while IFS= read -r l; do
            grep -qxF -- "$l" <(cut -f1 "$DONE") || { echo "$l"; break; }
          done)
