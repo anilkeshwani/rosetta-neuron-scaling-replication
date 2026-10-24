@@ -1,0 +1,30 @@
+{
+  "run_dir": "outputs/phase1_pythia_opt/pythia-160m__opt-125m",
+  "models": [
+    "EleutherAI/pythia-160m",
+    "facebook/opt-125m"
+  ],
+  "batches": 1221,
+  "spans": 8979760,
+  "forward_dtype": "float32",
+  "elapsed_s": 15924,
+  "gpu_counts": {
+    "1": 2608,
+    "2": 6995,
+    "5": 24274,
+    "10": 60577
+  },
+  "cpu_bf16_accum": {
+    "1": 2622,
+    "2": 7046,
+    "5": 24592,
+    "10": 61164
+  },
+  "cpu_fp32_accum": {
+    "1": 2859,
+    "2": 7471,
+    "5": 25286,
+    "10": 61072
+  },
+  "top1_agreement_bf16_vs_fp32": 0.4799533486366272
+}
