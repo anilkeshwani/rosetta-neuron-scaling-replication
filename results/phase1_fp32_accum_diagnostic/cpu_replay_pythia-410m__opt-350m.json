@@ -1,0 +1,30 @@
+{
+  "run_dir": "outputs/phase1_pythia_opt/pythia-410m__opt-350m",
+  "models": [
+    "EleutherAI/pythia-410m",
+    "facebook/opt-350m"
+  ],
+  "batches": 1221,
+  "spans": 8979760,
+  "forward_dtype": "float32",
+  "elapsed_s": 91646,
+  "gpu_counts": {
+    "1": 3444,
+    "2": 9470,
+    "5": 34965,
+    "10": 92476
+  },
+  "cpu_bf16_accum": {
+    "1": 3428,
+    "2": 9510,
+    "5": 35326,
+    "10": 93250
+  },
+  "cpu_fp32_accum": {
+    "1": 3840,
+    "2": 10342,
+    "5": 36952,
+    "10": 95170
+  },
+  "top1_agreement_bf16_vs_fp32": 0.4680074155330658
+}
