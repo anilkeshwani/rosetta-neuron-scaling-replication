@@ -72,3 +72,17 @@ The 160M pair matches the paper almost exactly. **The 410M pair is 36% below the
 2. Decide with the user on a diagnostic fp32-accumulator patch (`find_pairs/match_corr.py:179-182`), run on 160M and 410M only, to test whether bf16 accumulation explains the 410M gap. It would go in `patches/` and not be used for reported fits.
 3. Raise the paper's data oddities with the user (2.8B plotted at x=360,448 instead of 327,680; shared trailing digits across k at the largest sizes).
 4. 2.8B, 6.9B and 12B pairs: token caches are prebuilt under `data/token_caches/phase1_pythia_opt/`. Expect memory pressure; 6.9B and 12B use FSDP.
+
+## Status, 2026-10-25 07:30
+
+- The GPUs were handed to a higher-priority project early on 2026-10-24 and are expected back after the weekend. Our queue (`logs/gpu_queue.txt`, 39 runs, run by `scripts/gpu_queue_runner.sh` in tmux `rosetta-queue`) is paused by `logs/gpu_queue.txt.pause`; `scripts/gpu_resume.sh` restarts it. The random-init null runs in progress were stopped and requeued (none had finished). All token caches for the queued runs are built.
+- fp32 accumulation diagnostic, run on CPU with `scripts/cpu_accum_dtype_diagnostic.py` (same inputs, only the running sum's precision differs; results in `results/phase1_fp32_accum_diagnostic/`):
+
+| Pair, k=1 | GPU (bf16 sum) | CPU replay, bf16 sum | CPU replay, fp32 sum | Paper |
+|---|---|---|---|---|
+| Pythia-160M / OPT-125M | 2,608 | 2,622 | 2,859 (+9%) | 2,609 |
+| Pythia-410M / OPT-350M | 3,444 | 3,428 | 3,840 (+12%) | 5,418 |
+
+  The replay reproduces the GPU counts to within 0.5%. Fewer than half of all neurons keep their top-1 partner between the two sums. bf16 accumulation is a real source of error, the paper's 160M count matches the bf16 sum, and it does not explain the 410M gap (fp32 closes about a fifth of it).
+- Vocabulary kurtosis (paper Fig. 6a) replicated in direction at 160M to 1.4B (`results/phase4_vocab_kurtosis/`). Gemma 3 4B+ loading is patched (patch 0002); the input-permutation null is patch 0003. Live results page: https://claude.ai/artifact/7cvcxqMr2eJ1saVphUJuCn
+- Next when the GPUs return: resume the queue (patch regression check first). Open question for the 410M gap: candidate causes not yet tested are a different checkpoint or tokenizer variant on the authors' side (e.g. Pythia deduped) and a per-size token budget.
