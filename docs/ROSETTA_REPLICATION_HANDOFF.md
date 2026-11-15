@@ -1,6 +1,6 @@
 # Handoff: Rosetta Neuron scaling replication
 
-Written 2026-10-23 by the Claude Code session that scaffolded this repo. You are taking over on the GPU machine. Read this file, then `README.md`, `CLAUDE.md` and the four files in `docs/`.
+Written 2026-10-23 by the Claude Code session that scaffolded this repo. You are taking over on the GPU machine. Read this file, then `README.md`, `AGENTS.md` and the four files in `docs/`.
 
 ## Goal
 
@@ -9,7 +9,7 @@ Replicate, then extend, Dravid et al. 2026, "Neuron Populations Exhibit Divergen
 ## State of the repo
 
 - Location: `~/projects/rosetta-neuron-scaling-replication`. Remote: https://github.com/anilkeshwani/rosetta-neuron-scaling-replication (public, created 2026-10-24 at the user's request; history rewritten once that day to drop a work email, see `docs/GIT_HISTORY_REWRITE_SHA_MAP.md`).
-- The authors' code is the submodule `third_party/rosetta-neuron-scaling`, pinned at `15cd3c7`. Do not edit it in place; patches go in `patches/` (see `CLAUDE.md`).
+- The authors' code is the submodule `third_party/rosetta-neuron-scaling`, pinned at `15cd3c7`. Do not edit it in place; patches go in `patches/` (see `AGENTS.md`).
 - Written but **not yet exercised against a real run**: `scripts/run_pair.sh`, `run_experiment.py`, `collect_rosetta_counts.py`, `fit_power_law.py`, `make_random_init_checkpoints.py`, `download_models.py`, `download_pile_val.sh`. Expect bugs. The smoke test exists to find them.
 - `configs/models.yaml` holds layer counts and MLP widths written from memory. `scripts/verify_model_registry.py` checks them against the Hub; fix any MISMATCH lines before trusting x values.
 - The paper-fit pairings in `configs/paper_reference_fits.yaml` are inferred from legend order. Only `pythia_opt` and `diffusion_openclip` are confirmed.
